@@ -4,11 +4,11 @@
 | Method    | URI                  | Action (CRUD)     | Has Request Body?
 |:---       |:---                  |:---               |:---
 |POST       |/vehicles             |CREATE             |Yes
-|PUT        |/vehicles?oid=123     |UPDATE             |Yes
-|PATCH      |/vehicles?oid=123     |UPDATE (partial)   |Yes
-|GET        |/vehicles?oid=123     |READ               |No
-|DELETE     |/vehicles?oid=123     |DELETE             |No
-|HEAD       |/vehicles?oid=123     |EXISTS             |No
+|PUT        |/vehicles?vin=123     |UPDATE             |Yes
+|PATCH      |/vehicles?vin=123     |UPDATE (partial)   |Yes
+|GET        |/vehicles?vin=123     |READ               |No
+|DELETE     |/vehicles?vin=123     |DELETE             |No
+|HEAD       |/vehicles?vin=123     |EXISTS             |No
 
 ### Resources
 
