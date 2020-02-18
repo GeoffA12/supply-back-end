@@ -7,3 +7,6 @@ PYTHON FILE FOR NOW.
 Things getting real topsy-turvy around here about APIs, just remember KISS. Keep It Simple Stupid. Potential parameters
 added and how they might be utilised for for CURD methods. CURD (Create, Update, Read, Delete) Still ignore python
 file.
+
+17/2/2020 20:17
+Test
