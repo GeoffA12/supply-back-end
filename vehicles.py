@@ -34,6 +34,7 @@ POST http://team22.supply.softwareengineeringii.com/orders/1
 '''
 
 class VehicleRequestHandler():
+    ver = '0.0'
 
     def post(self):
         '''

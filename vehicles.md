@@ -30,6 +30,44 @@ http://team22.supply.softwareengineeringii.com/api/backend/0.0/vehicles?vin={ord
 http://team22.supply.softwareengineeringii.com/api/backend/0.0/vehicles?vin=1WUYDCJE9FN072354
 
 ## Scenarios and Pseudocode of logic (Potential Test Cases!)
+### GET Generic Response
+```
+method: GET
+URI: http://team22.supply.softwareengineeringii.com/api/backend/0.0/vehicles
+[
+    {
+        "VIN" : "1WUYDCJE9FN072354",
+        "serviceType" : DryCleaning,
+        "vehicleMake" : "Toyota",
+        "liscencePlate" : "QW3456",
+        "status" : "Fulfilling",
+        "location" : {
+            "lon" : 23.42,
+            "lat" : 42.12,
+        },
+        "destination" : {
+            "address1" : "3001 S Congress Ave",
+            "address2" : "St. Andres RM222D"
+        }
+    },
+        "VIN" : "1WUYDCJE9FN072354",
+        "serviceType" : PartyPlanner,
+        "vehicleMake" : "Tesla",
+        "liscencePlate" : "TE1241",
+        "status" : "Deilvered"
+        "location" : {
+            "lon" : 45.12,
+            "lat" : 10.31,
+        },
+        "destination" : {
+            "address1" : "",
+            "address2" : ""
+        }
+    },...,{nth vehicle data}
+]
+```
+
+**Scenario 1:**\
 Customer submits an order request
 I the API am expecting an order.json from the DemandBE
 I will respond to the DemandBE with confirmation of the order and that fulfillment has begun
@@ -52,7 +90,7 @@ Content-Type: application/json;
 }
 
 # Some logic about deciding which vehicle gets selected. Vehicle gets selected
-# Dispatch created
+# Dispatch created. Strip order.json for all relevant data used for dispatch
     # Dispatch written to disaptchRecord table
     # Get some sort of route from mapping service
     # Car begins route (not really logic that happens here, just what probably happens next)
@@ -62,9 +100,12 @@ dest address
 vehicle location
 serviceType
 isVehicleAvailable 
-# I will now responde to the DemandDB with
+# I will now responde to the DemandDB with:
+200 HTTPS Status
+
 ```
 
+**Scenario 2:**\
 The fleet manager wants to see what vehicle is fulfilling order 123
 ```
 method: GET 
@@ -73,16 +114,15 @@ No body associate with GET method. Just queries
 
 Should be very similar, if not the exact same as the POST's response to the DemandBE.
 However, depending how many parameters we might want to allow, it may restrict and/or append more data to our response.
-Below will be generic response given oid
 
 # My response:
 Expected HTTP Status: 200
 {
     "VIN" : "1WUYDCJE9FN072354",
-    "serviceType" : DryCleaning
+    "serviceType" : DryCleaning,
     "vehicleMake" : "Toyota",
     "liscencePlate" : "QW3456",
-    "status" : "Fulfilling"
+    "status" : "Fulfilling",
     "location" : {
         "lon" : 23.42,
         "lat" : 42.12,
@@ -94,6 +134,7 @@ Expected HTTP Status: 200
 }
 ```
 
+**Scenario 3:**\
 Our vehicle will periodically be sending its location and status. 
 In this case the most important change will be that the current dispatch has been completed and order delivered. And
  since there is now order being fulfilled, destination would be null/empty string (whatever gets decided for empty
@@ -108,7 +149,7 @@ I am the vehicle sending this JSON Body to the SupplyBE
     "status" : "Delivered",
     "location" : {
         "lon" : 134.12,
-        "lat" : 31.21,
+        "lat" : 31.21
     },
     "destination" : {
         "address1" : "",
@@ -116,9 +157,16 @@ I am the vehicle sending this JSON Body to the SupplyBE
     }
 }
 
-def PATCH(self)
-    if(path == ./carData)
-        Update vehicle table with new coordinates and status
+# Query vehicle table on incoming VIN, check for malformed data, PATCH incoming data
+# Kinda rusty on SQL syntax, but I think this gets the message accross just fine
+def vehiclePing(self, desiredVIN, patchData)
+    SELECT * FROM Vehicles WHERE VIN = desiredVIN:
+    PATCH status, lon, lat, destination:
+    patchData[status], 
+    patchData[location[lon], 
+    patchData[location[lat], 
+    f'{patchData[destination[address1]]}, 
+    {patchData[destination[address2]]}'
 ```
 
 | HTTP Code | POST condition                            | GET condition
