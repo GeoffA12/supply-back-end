@@ -171,15 +171,14 @@ I am the vehicle sending this JSON Body to the SupplyBE
     }
 }
 
-# Query vehicle table on incoming VIN, check for malformed data, PATCH incoming data
+# Check for malformed data, query vehicle table on incoming VIN, PATCH incoming data
 # Kinda rusty on SQL syntax, but I think this gets the message accross
-def vehiclePing(self, desiredVIN, data)
-    patchData = json.stringify(data)
+def vehiclePing(self, desiredVIN, patchData)
     SELECT * FROM Vehicles WHERE VIN = desiredVIN:
     PATCH status, lon, lat, destination:
     patchData[status], 
-    patchData[location[lon], 
-    patchData[location[lat], 
+    patchData[location[lon]], 
+    patchData[location[lat]], 
     f'{patchData[destination[address1]]}, 
     {patchData[destination[address2]]}'
 ```
