@@ -21,3 +21,8 @@ Inspired by OpenWeather style of documentation. Am I conflating design and docum
 
 06:42
 Generic(no parameter) GET response added
+----------------
+19/2/2020
+02:51
+Skeleton dispatch class made and iterated so help with understanding what a dispatch is.
+ASCII Artified an SQL Dispatch Record Table.
