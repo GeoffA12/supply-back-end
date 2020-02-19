@@ -1,17 +1,16 @@
 # Vehicle Request API Design
 
 ## HTTP Method Familiarity
-| Method    | URI                  | Action (CRUD)     | Has Request Body?
-|:---       |:---                  |:---               |:---
-|POST       |/vehicles             |CREATE             |Yes
-|PUT        |/vehicles/vin/123     |UPDATE             |Yes
-|PATCH      |/vehicles/vin/123     |UPDATE (partial)   |Yes
-|GET        |/vehicles?vin=123     |READ               |No
-|DELETE     |/vehicles?vin=123     |DELETE             |No
-|HEAD       |/vehicles?vin=123     |EXISTS             |No
+| Method    | URI         | Action (CRUD)     | Has Request Body?
+|:---       |:---         |:---               |:---
+|POST       |/vehicles    |CREATE             |Yes
+|PUT        |/vehicles    |UPDATE             |Yes
+|PATCH      |/vehicles    |UPDATE (partial)   |Yes
+|GET        |/vehicles    |READ               |No
+|DELETE     |/vehicles    |DELETE             |No
+|HEAD       |/vehicles    |EXISTS             |No
 
 ## Resources
-
 | Parameter | Semantics  |
 |:---       |:---        |
 |oid        |Order ID    |
@@ -30,17 +29,18 @@ http://team22.supply.softwareengineeringii.com/api/backend/0.0/vehicles?vin={ord
 http://team22.supply.softwareengineeringii.com/api/backend/0.0/vehicles?vin=1WUYDCJE9FN072354
 
 ## Scenarios and Pseudocode of logic (Potential Test Cases!)
-### GET Generic Response
+**Generic GET Response**
+This is a generic response of a get method to our API given that our client doesn't 
 ```
 method: GET
 URI: http://team22.supply.softwareengineeringii.com/api/backend/0.0/vehicles
 [
     {
-        "VIN" : "1WUYDCJE9FN072354",
+        "vid" : 12345,
         "serviceType" : DryCleaning,
         "vehicleMake" : "Toyota",
         "liscencePlate" : "QW3456",
-        "status" : "Fulfilling",
+        "status" : Delivering,
         "location" : {
             "lon" : 23.42,
             "lat" : 42.12,
@@ -50,11 +50,12 @@ URI: http://team22.supply.softwareengineeringii.com/api/backend/0.0/vehicles
             "address2" : "St. Andres RM222D"
         }
     },
-        "VIN" : "1WUYDCJE9FN072354",
+    {
+        "vid" : 98765,
         "serviceType" : PartyPlanner,
         "vehicleMake" : "Tesla",
         "liscencePlate" : "TE1241",
-        "status" : "Deilvered"
+        "status" : Delivered,
         "location" : {
             "lon" : 45.12,
             "lat" : 10.31,
@@ -79,7 +80,7 @@ Content-Type: application/json;
 # Body as a JSON
 # What I, the API, am receiving
 {
-    "serviceType" : "dryCleaning",  # Could probably be an ENUM
+    "serviceType" : DryCleaning",  # Could probably be an ENUM
     "orderID" : 123,
     "destination" : {
         "address1" : "3001 S Congress Ave",
@@ -102,7 +103,21 @@ serviceType
 isVehicleAvailable 
 # I will now responde to the DemandDB with:
 200 HTTPS Status
-
+{
+    "vid" : 12345,
+    "serviceType" : DryCleaning,
+    "vehicleMake" : "Toyota",
+    "liscencePlate" : "QW3456",
+    "status" : Delivering,
+    "location" : {
+        "lon" : 23.42,
+        "lat" : 42.12,
+    },
+    "destination" : {
+        "address1" : "3001 S Congress Ave",
+        "address2" : "St. Andres RM222D"
+    }
+}
 ```
 
 **Scenario 2:**\
@@ -118,11 +133,11 @@ However, depending how many parameters we might want to allow, it may restrict a
 # My response:
 Expected HTTP Status: 200
 {
-    "VIN" : "1WUYDCJE9FN072354",
+    "vid" : 12345,
     "serviceType" : DryCleaning,
     "vehicleMake" : "Toyota",
     "liscencePlate" : "QW3456",
-    "status" : "Fulfilling",
+    "status" : Delivering,
     "location" : {
         "lon" : 23.42,
         "lat" : 42.12,
@@ -136,17 +151,16 @@ Expected HTTP Status: 200
 
 **Scenario 3:**\
 Our vehicle will periodically be sending its location and status. 
-In this case the most important change will be that the current dispatch has been completed and order delivered. And
- since there is now order being fulfilled, destination would be null/empty string (whatever gets decided for empty
+Since our status is now fulfilled, destination would be null/empty string (whatever gets decided for empty
   cells, for now will represent with empty strings)
 ```
 method: PATCH 
-URI http://team22.supply.softwareengineeringii.com/api/backend/0.0/vehicles?vid="1WUYDCJE9FN072354"
+URI: http://team22.supply.softwareengineeringii.com/api/backend/0.0/vehicles?vid=12345
 Content-Type: application/json
 
 I am the vehicle sending this JSON Body to the SupplyBE
 {
-    "status" : "Delivered",
+    "status" : Delivered,
     "location" : {
         "lon" : 134.12,
         "lat" : 31.21
@@ -158,8 +172,9 @@ I am the vehicle sending this JSON Body to the SupplyBE
 }
 
 # Query vehicle table on incoming VIN, check for malformed data, PATCH incoming data
-# Kinda rusty on SQL syntax, but I think this gets the message accross just fine
-def vehiclePing(self, desiredVIN, patchData)
+# Kinda rusty on SQL syntax, but I think this gets the message accross
+def vehiclePing(self, desiredVIN, data)
+    patchData = json.stringify(data)
     SELECT * FROM Vehicles WHERE VIN = desiredVIN:
     PATCH status, lon, lat, destination:
     patchData[status], 
@@ -168,9 +183,3 @@ def vehiclePing(self, desiredVIN, patchData)
     f'{patchData[destination[address1]]}, 
     {patchData[destination[address2]]}'
 ```
-
-| HTTP Code | POST condition                            | GET condition
-|:---       |:---                                       |:---
-|201        |Order confirmed, and vehicle dispatched    |
-|400        |Order.json is malformed (demand end?)      |
-|404        |Resource not found                         |
