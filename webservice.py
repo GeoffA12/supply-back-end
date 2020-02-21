@@ -8,7 +8,7 @@ from .dispatch import Dispatch
 import datetime
 
 def connectToMariaDB():
-    return mariadb.connect(user='root', password='ShinyNatu34', database='team22demand')
+    return mariadb.connect(user='root', password='password', database='team22demand', port=6022)
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
     ver = '0.0'
