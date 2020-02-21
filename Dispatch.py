@@ -1,15 +1,17 @@
-from datetime import time
+from datetime import datetime
 
 class Dispatch(object):
     ver = '0.0'
 
-    def __init__(self, vid, oid, loc_0, loc_f, timeCreated, isDone = False):
-        self.vid = vid
-        self.oid = oid
-        self.loc_0 = loc_0
-        self.loc_f = loc_f
-        self.timeCreated = timeCreated
-        self.isDone = isDone
+    def __init__(self, **kwargs):
+        self.sType = kwargs["serviceType"]
+        self.vid = kwargs["vid"]
+        self.cid = kwargs["customerID"]
+        self.oid = kwargs["orderID"]
+        self.loc_0 = kwargs["loc_0"]
+        self.loc_f = kwargs["loc_f"]
+        self.timeCreated = kwargs["timeOrderMade"]
+        self.isDone = False
 
     def getRoute(self, curLoc):
         print('my route')
@@ -27,14 +29,21 @@ class Dispatch(object):
         print('human readable of end location')
         # do geocoding stuff with mapservice
 
+    def dispatchFulfilled(self):
+        self.isDone = True
+
     def _asdict(self):
         return self.__dict__
 
     def __repr__(self):
-        return f'Dispatch({self.vid}, {self.oid}, {self.loc_0}, {self.loc_f}, {self.timeCreated}, {self.isDone})'
+        return f'Dispatch(' \
+               f'{self.sType}, {self.vid}, {self.cid}, {self.oid}, {self.loc_0}, {self.loc_f}, {self.timeCreated},' \
+               f' {self.isDone})'
 
     def __str__(self):
-        return f'''Vehicle ID: {self.vid}
+        return f'''Service Type: {self.sType}
+Vehicle ID: {self.vid}
+Customer ID: {self.cid}
 Order ID: {self.oid}
 Start Location: {self.loc_0}
 End Location: {self.loc_f}
@@ -43,18 +52,47 @@ Dispatch Fulfilled: {self.isDone}
 '''
 
 if __name__ == '__main__':
-    dispatch1 = Dispatch(vid = 12345,
-                         oid = 123,
-                         loc_0= (23.42, 42.12),
-                         loc_f= (45.12, 124.22),
-                         timeCreated= time(5, 18, 21)
-                         )
-    print(dispatch1)
-    for k, v in dispatch1._asdict().items():
-        print(f'{k} --> {v}')
+    v = {
+            "vid": 98765,
+            "serviceType": "DryCleaning",
+            "vehicleMake": "Tesla",
+            "liscencePlate": "TE1241",
+            "status": "Delivered",
+            "location": {
+                "lon": 45.12,
+                "lat": 10.31
+            },
+            "destination": {
+                "address1": "",
+                "address2": ""
+            }
+        }
+    dictionary = {
+            "serviceType" : "DryCleaning",
+            "customerID" : 19821,
+            "orderID" : 123,
+            "location" : {
+                "lon" : 45.12,
+                "lat" : 124.22
+            },
+            "timeOrderMade" : "12:2:34"
+        }
+    attrToTuple = dictionary.pop("location")
+    dictionary["loc_f"] = (attrToTuple["lon"], attrToTuple["lat"])
 
-    dispatch1.isDone = True
-    print()
+    dictionary["vid"] = v["vid"]
+    attrToTuple = v.pop("location")
+    dictionary["loc_0"] = (attrToTuple["lon"], attrToTuple["lat"])
+
+    strToDateTime = datetime.strptime(dictionary["timeOrderMade"], '%H:%M:%S').time()
+    dictionary["timeOrderMade"] = strToDateTime
+
+    dispatch1 = Dispatch(**dictionary)
+    print(dispatch1)
+    # for k, v in dispatch1._asdict().items():
+    #     print(f'{k} --> {v}')
+
+    dispatch1.dispatchFulfilled()
     print(dispatch1)
 
 print(''' Dispatch Record SQL Table

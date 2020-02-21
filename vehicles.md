@@ -81,13 +81,13 @@ Content-Type: application/json;
 # What I, the API, am receiving
 {
     "serviceType" : DryCleaning",  # Could probably be an ENUM
+    "cusomterID : 19821
     "orderID" : 123,
-    "destination" : {
-        "address1" : "3001 S Congress Ave",
-        "address2" : "St. Andres 222D"
+    "location" : {
+        "lon" : 45.12,
+        "lat" : 124.22
     },
-    "phoneNum" : 9728002591,
-    "timeOrderMade" : 12:02:34    # should be type DateTime or Timestamp(<-- only SQL?)
+    "timeOrderMade" : 12:02:34    # should be type DateTime
 }
 
 # Some logic about deciding which vehicle gets selected. Vehicle gets selected

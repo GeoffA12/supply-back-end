@@ -1,0 +1,120 @@
+import http.server
+from http.server import HTTPServer, BaseHTTPRequestHandler
+import json
+import urllib.parse
+# import mysql.connector as mariadb
+import requests
+import random
+from Dispatch import Dispatch
+
+
+
+class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
+    ver = '0.0'
+    vehicleList = [
+        {
+            "vid": 12345,
+            "serviceType": "DryCleaning",
+            "vehicleMake": "Toyota",
+            "liscencePlate": "QW3456",
+            "status": "Delivering",
+            "location": {
+                "lon": 23.42,
+                "lat": 42.12
+            },
+            "destination": {
+                "address1": "3001 S Congress Ave",
+                "address2": "St. Andres RM222D"
+            }
+        },
+        {
+            "vid": 98765,
+            "serviceType": "DryCleaning",
+            "vehicleMake": "Tesla",
+            "liscencePlate": "TE1241",
+            "status": "Delivered",
+            "location": {
+                "lon": 45.12,
+                "lat": 10.31
+            },
+            "destination": {
+                "address1": "",
+                "address2": ""
+            }
+        }
+    ]
+
+    def connectToMariaDB(self):
+        return mariadb.connect(user='root', password='ShinyNatu34', database='team22demand')
+
+    # How to convert the body from a string to a dictionary
+    # use 'loads' to convert from byte/string to a dictionary!
+    def getPOSTBody(self):
+        length = int(self.headers['content-length'])
+        body = self.rfile.read(length)
+        return json.loads(body)
+
+    def do_POST(self):
+        path = self.path
+        if path.endswith('/vehicleRequest'):
+            dictionary = getPOSTBody()
+            '''
+            dictionary = {
+                "serviceType" : "DryCleaning",  # Could probably be an ENUM
+                "customerID" : 19821
+                "orderID" : 123,
+                "location" : {
+                    "lon" : 45.12,
+                    "lat" : 124.22
+                },
+                "timeOrderMade" : 12:02:34    # should be type DateTime
+            }
+            '''
+            # Until we get a vehicle DB, just this for now. But this would otherwise
+            # Pull vehicle data from the vehicle table and choose one.
+            # And of course as progress, we will add mor elogic to the
+            # decision process of which vehicle is selected
+            vehicle = vehicleList[1]
+
+            attrToTuple = dictionary.pop("location")
+            dictionary["loc_f"] = (attrToTuple["lon"], attrToTuple["lat"])
+
+            dictionary["vid"] = vehicle["vid"]
+            attrToTuple = vehicle.pop("location")
+            dictionary["loc_0"] = (attrToTuple["lon"], attrToTuple["lat"])
+
+            strToDateTime = datetime.strptime(dictionary["timeOrderMade"], '%H:%M:%S').time()
+            dictionary["timeOrderMade"] = strToDateTime
+
+            dispatch = Dispatch(**dictionary)
+
+            responseDict = vehicle
+            status = 200
+
+        else:
+            status = 404
+
+        self.send_response(status)
+        self.end_headers()
+        res = json.dumps(responseDict)
+        bytesStr = res.encode('utf-8')
+        self.wfile.write(bytesStr)
+
+    def do_GET(self):
+        path = self.path
+        if path.endswith('/vehicleRequest'):
+            response = vehicleList
+        elif True:
+            print()
+
+        self.send_response(status)
+        self.end_headers()
+        res = json.dumps(responseDict)
+        bytesStr = res.encode('utf-8')
+        self.wfile.write(bytesStr)
+
+def main():
+    print('')
+
+if __name__ == '__main__':
+    main()

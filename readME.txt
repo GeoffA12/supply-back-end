@@ -26,3 +26,12 @@ Generic(no parameter) GET response added
 02:51
 Skeleton dispatch class made and iterated so help with understanding what a dispatch is.
 ASCII Artified an SQL Dispatch Record Table.
+----------------
+21/2/2020
+4:18
+Updated small things about json objects in API design. Will continue to morph and iterate based on decisions made about
+table names and columns
+Added vehicle request handling in supplyBE do_POST. Should created a Dispatch() object of the order and responds with
+data of the vehicle that was dispatched
+webservice do_GET() should be able to handle zero parameter get requests. Just returns the list of vehicles.
+Need to update ASCII art of dispatch table on Dispatch.py
