@@ -1,51 +1,17 @@
 import http.server
-from http.server import HTTPServer, BaseHTTPRequestHandler
+from http.server import BaseHTTPRequestHandler
 import json
 import urllib.parse
-# import mysql.connector as mariadb
+import mysql.connector as mariadb
 import requests
-import random
-from Dispatch import Dispatch
+from .dispatch import Dispatch
+import datetime
 
-
+def connectToMariaDB():
+    return mariadb.connect(user='root', password='ShinyNatu34', database='team22demand')
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
     ver = '0.0'
-    vehicleList = [
-        {
-            "vid": 12345,
-            "serviceType": "DryCleaning",
-            "vehicleMake": "Toyota",
-            "liscencePlate": "QW3456",
-            "status": "Delivering",
-            "location": {
-                "lon": 23.42,
-                "lat": 42.12
-            },
-            "destination": {
-                "address1": "3001 S Congress Ave",
-                "address2": "St. Andres RM222D"
-            }
-        },
-        {
-            "vid": 98765,
-            "serviceType": "DryCleaning",
-            "vehicleMake": "Tesla",
-            "liscencePlate": "TE1241",
-            "status": "Delivered",
-            "location": {
-                "lon": 45.12,
-                "lat": 10.31
-            },
-            "destination": {
-                "address1": "",
-                "address2": ""
-            }
-        }
-    ]
-
-    def connectToMariaDB(self):
-        return mariadb.connect(user='root', password='ShinyNatu34', database='team22demand')
 
     # How to convert the body from a string to a dictionary
     # use 'loads' to convert from byte/string to a dictionary!
@@ -55,9 +21,42 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         return json.loads(body)
 
     def do_POST(self):
+        vehicleList = [
+            {
+                "vid": 12345,
+                "serviceType": "DryCleaning",
+                "vehicleMake": "Toyota",
+                "liscencePlate": "QW3456",
+                "status": "Delivering",
+                "location": {
+                    "lon": 23.42,
+                    "lat": 42.12
+                },
+                "destination": {
+                    "address1": "3001 S Congress Ave",
+                    "address2": "St. Andres RM222D"
+                }
+            },
+            {
+                "vid": 98765,
+                "serviceType": "DryCleaning",
+                "vehicleMake": "Tesla",
+                "liscencePlate": "TE1241",
+                "status": "Delivered",
+                "location": {
+                    "lon": 45.12,
+                    "lat": 10.31
+                },
+                "destination": {
+                    "address1": "",
+                    "address2": ""
+                }
+            }
+        ]
         path = self.path
+        responseDict = {}
         if path.endswith('/vehicleRequest'):
-            dictionary = getPOSTBody()
+            dictionary = self.getPOSTBody()
             '''
             dictionary = {
                 "serviceType" : "DryCleaning",  # Could probably be an ENUM
@@ -74,6 +73,9 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             # Pull vehicle data from the vehicle table and choose one.
             # And of course as progress, we will add mor elogic to the
             # decision process of which vehicle is selected
+
+            mariadb_connection = connectToMariaDB()
+
             vehicle = vehicleList[1]
 
             attrToTuple = dictionary.pop("location")
@@ -101,9 +103,43 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(bytesStr)
 
     def do_GET(self):
+        vehicleList = [
+            {
+                "vid": 12345,
+                "serviceType": "DryCleaning",
+                "vehicleMake": "Toyota",
+                "liscencePlate": "QW3456",
+                "status": "Delivering",
+                "location": {
+                    "lon": 23.42,
+                    "lat": 42.12
+                },
+                "destination": {
+                    "address1": "3001 S Congress Ave",
+                    "address2": "St. Andres RM222D"
+                }
+            },
+            {
+                "vid": 98765,
+                "serviceType": "DryCleaning",
+                "vehicleMake": "Tesla",
+                "liscencePlate": "TE1241",
+                "status": "Delivered",
+                "location": {
+                    "lon": 45.12,
+                    "lat": 10.31
+                },
+                "destination": {
+                    "address1": "",
+                    "address2": ""
+                }
+            }
+        ]
         path = self.path
+        status = 200
+        responseDict = {}
         if path.endswith('/vehicleRequest'):
-            response = vehicleList
+            responseDict = vehicleList
         elif True:
             print()
 
