@@ -21,14 +21,6 @@ class Dispatch(object):
         print('my eta')
         # do stuff to get ETA, will probably need DateTime.now stuff
 
-    def loc_0Address(self):
-        print('human readable of start location')
-        # do geocoding stuff with mapservice
-
-    def loc_fAddress(self):
-        print('human readable of end location')
-        # do geocoding stuff with mapservice
-
     def dispatchFulfilled(self):
         self.isDone = True
 

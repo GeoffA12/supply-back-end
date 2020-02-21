@@ -69,15 +69,22 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 "timeOrderMade" : 12:02:34    # should be type DateTime
             }
             '''
-            # Until we get a vehicle DB, just this for now. But this would otherwise
-            # Pull vehicle data from the vehicle table and choose one.
-            # And of course as progress, we will add mor elogic to the
-            # decision process of which vehicle is selected
+
+            '''
+            Until we get a vehicle DB, just this for now. But this would otherwise
+            Pull vehicle data from the vehicle table and choose one.
+            And of course as progress, we will add mor elogic to the
+            decision process of which vehicle is selected
+            '''
 
             mariadb_connection = connectToMariaDB()
 
             vehicle = vehicleList[1]
-
+            '''
+            Because we are receiving a payload that isn't formatted how we want it in our Dispatch, and maybe
+            we can change what lives in dispatch, but for how it is, we need to break up our nesting
+            and get it into tuple form. 
+            '''
             attrToTuple = dictionary.pop("location")
             dictionary["loc_f"] = (attrToTuple["lon"], attrToTuple["lat"])
 
@@ -85,6 +92,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             attrToTuple = vehicle.pop("location")
             dictionary["loc_0"] = (attrToTuple["lon"], attrToTuple["lat"])
 
+            # Here, we're just converting the string of the time to the DateTime type.
             strToDateTime = datetime.strptime(dictionary["timeOrderMade"], '%H:%M:%S').time()
             dictionary["timeOrderMade"] = strToDateTime
 
