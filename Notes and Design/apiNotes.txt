@@ -1,0 +1,20 @@
+Dispatch will have the associated vehicleID so that we can have multiple orders carried out by the vehicle
+
+Will write dispatch to SupplyDB
+
+Your different backends and clouds will be holding different types of data. During your transactions, what data does
+the supply side have available and what is needed from the demand side to request a vehicle
+
+CRUD
+Be able to support each CRUD method to some degree
+
+What data am I asking for?
+
+
+What data am I giving?
+    Who is asking for what kind of information?
+
+What data am I updating?
+
+
+What data am I deleting?
