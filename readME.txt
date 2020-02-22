@@ -35,3 +35,12 @@ Added vehicle request handling in supplyBE do_POST. Should created a Dispatch() 
 data of the vehicle that was dispatched
 webservice do_GET() should be able to handle zero parameter get requests. Just returns the list of vehicles.
 Need to update ASCII art of dispatch table on Dispatch.py
+
+17:51
+Small potatoes
+
+----------------
+22/2/2020
+
+16:05
+Ready to start testing api call. Uncommenting stuff

@@ -2,13 +2,13 @@ import http.server
 from http.server import BaseHTTPRequestHandler
 import json
 import urllib.parse
-import mysql.connector as mariadb
+import mysql.connector as sqldb
 import requests
-from .dispatch import Dispatch
-import datetime
+# from dispatch import Dispatch
+# import datetime
 
-def connectToMariaDB():
-    return mariadb.connect(user='root', password='ShinyNatu34', database='team22demand')
+def connectToSQLDB():
+    return sqldb.connect(user='root', password='password', database='team22demand', port=6022)
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
     ver = '0.0'
@@ -27,14 +27,14 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 "serviceType": "DryCleaning",
                 "vehicleMake": "Toyota",
                 "liscencePlate": "QW3456",
-                "status": "Delivering",
+                "status": "Active",
                 "location": {
                     "lon": 23.42,
                     "lat": 42.12
                 },
                 "destination": {
-                    "address1": "3001 S Congress Ave",
-                    "address2": "St. Andres RM222D"
+                    "lon": 125.12,
+                    "lat": 213.21
                 }
             },
             {
@@ -42,61 +42,42 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 "serviceType": "DryCleaning",
                 "vehicleMake": "Tesla",
                 "liscencePlate": "TE1241",
-                "status": "Delivered",
+                "status": "Inactive",
                 "location": {
                     "lon": 45.12,
                     "lat": 10.31
                 },
                 "destination": {
-                    "address1": "",
-                    "address2": ""
+                    "lon": None,
+                    "lat": None
                 }
             }
         ]
         path = self.path
         responseDict = {}
-        if path.endswith('/vehicleRequest'):
-            dictionary = self.getPOSTBody()
-            '''
-            dictionary = {
-                "serviceType" : "DryCleaning",  # Could probably be an ENUM
-                "customerID" : 19821
-                "orderID" : 123,
-                "location" : {
-                    "lon" : 45.12,
-                    "lat" : 124.22
-                },
-                "timeOrderMade" : 12:02:34    # should be type DateTime
-            }
-            '''
+        if '/vehicleRequest' in path:
+            # dictionary = self.getPOSTBody()
 
-            '''
-            Until we get a vehicle DB, just this for now. But this would otherwise
-            Pull vehicle data from the vehicle table and choose one.
-            And of course as progress, we will add mor elogic to the
-            decision process of which vehicle is selected
-            '''
+            # Until we get a vehicle DB, just this for now. But this would otherwise
+            # Pull vehicle data from the vehicle table and choose one.
+            # And of course as progress, we will add mor elogic to the
+            # decision process of which vehicle is selected
 
-            mariadb_connection = connectToMariaDB()
+            # sqlConnection = connectToSQLDB()
 
             vehicle = vehicleList[1]
-            '''
-            Because we are receiving a payload that isn't formatted how we want it in our Dispatch, and maybe
-            we can change what lives in dispatch, but for how it is, we need to break up our nesting
-            and get it into tuple form. 
-            '''
-            attrToTuple = dictionary.pop("location")
-            dictionary["loc_f"] = (attrToTuple["lon"], attrToTuple["lat"])
 
-            dictionary["vid"] = vehicle["vid"]
-            attrToTuple = vehicle.pop("location")
-            dictionary["loc_0"] = (attrToTuple["lon"], attrToTuple["lat"])
+            # attrToTuple = dictionary.pop("location")
+            # dictionary["loc_f"] = (attrToTuple["lon"], attrToTuple["lat"])
+            #
+            # dictionary["vid"] = vehicle["vid"]
+            # attrToTuple = vehicle.pop("location")
+            # dictionary["loc_0"] = (attrToTuple["lon"], attrToTuple["lat"])
 
-            # Here, we're just converting the string of the time to the DateTime type.
-            strToDateTime = datetime.strptime(dictionary["timeOrderMade"], '%H:%M:%S').time()
-            dictionary["timeOrderMade"] = strToDateTime
+            # strToDateTime = datetime.strptime(dictionary["timeOrderMade"], '%H:%M:%S').time()
+            # dictionary["timeOrderMade"] = strToDateTime
 
-            dispatch = Dispatch(**dictionary)
+            # dispatch = Dispatch(**dictionary)
 
             responseDict = vehicle
             status = 200
@@ -117,14 +98,14 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 "serviceType": "DryCleaning",
                 "vehicleMake": "Toyota",
                 "liscencePlate": "QW3456",
-                "status": "Delivering",
+                "status": "Active",
                 "location": {
                     "lon": 23.42,
                     "lat": 42.12
                 },
                 "destination": {
-                    "address1": "3001 S Congress Ave",
-                    "address2": "St. Andres RM222D"
+                    "lon": 125.12,
+                    "lat": 213.21
                 }
             },
             {
@@ -132,14 +113,14 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 "serviceType": "DryCleaning",
                 "vehicleMake": "Tesla",
                 "liscencePlate": "TE1241",
-                "status": "Delivered",
+                "status": "Inactive",
                 "location": {
                     "lon": 45.12,
                     "lat": 10.31
                 },
                 "destination": {
-                    "address1": "",
-                    "address2": ""
+                    "lon": None,
+                    "lat": None
                 }
             }
         ]
