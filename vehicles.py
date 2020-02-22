@@ -2,13 +2,13 @@ import http.server
 from http.server import BaseHTTPRequestHandler
 import json
 import urllib.parse
-import mysql.connector as mariadb
+import mysql.connector as sqldb
 import requests
-from .dispatch import Dispatch
+from dispatch import Dispatch
 import datetime
 
-def connectToMariaDB():
-    return mariadb.connect(user='root', password='password', database='team22demand', port=6022)
+def connectToSQLDB():
+    return sqldb.connect(user='root', password='password', database='team22demand', port=6022)
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
     ver = '0.0'
@@ -74,7 +74,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             # And of course as progress, we will add mor elogic to the
             # decision process of which vehicle is selected
 
-            mariadb_connection = connectToMariaDB()
+            sqlConnection = connectToSQLDB()
 
             vehicle = vehicleList[1]
 
@@ -85,8 +85,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             attrToTuple = vehicle.pop("location")
             dictionary["loc_0"] = (attrToTuple["lon"], attrToTuple["lat"])
 
-            strToDateTime = datetime.strptime(dictionary["timeOrderMade"], '%H:%M:%S').time()
-            dictionary["timeOrderMade"] = strToDateTime
+            # strToDateTime = datetime.strptime(dictionary["timeOrderMade"], '%H:%M:%S').time()
+            # dictionary["timeOrderMade"] = strToDateTime
 
             dispatch = Dispatch(**dictionary)
 

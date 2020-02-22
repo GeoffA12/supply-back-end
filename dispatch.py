@@ -10,7 +10,7 @@ class Dispatch(object):
         self.oid = kwargs["orderID"]
         self.loc_0 = kwargs["loc_0"]
         self.loc_f = kwargs["loc_f"]
-        self.timeCreated = kwargs["timeOrderMade"]
+        # self.timeCreated = kwargs["timeOrderMade"]
         self.isDone = False
 
     def getRoute(self, curLoc):
@@ -37,8 +37,8 @@ class Dispatch(object):
 
     def __repr__(self):
         return f'Dispatch(' \
-               f'{self.sType}, {self.vid}, {self.cid}, {self.oid}, {self.loc_0}, {self.loc_f}, {self.timeCreated},' \
-               f' {self.isDone})'
+               f'{self.sType}, {self.vid}, {self.cid}, {self.oid}, {self.loc_0}, {self.loc_f}, {self.isDone})'
+# f'{self.timeCreated},' \
 
     def __str__(self):
         return f'''Service Type: {self.sType}
@@ -47,12 +47,16 @@ Customer ID: {self.cid}
 Order ID: {self.oid}
 Start Location: {self.loc_0}
 End Location: {self.loc_f}
-Time Order was Placed: {self.timeCreated}, 
 Dispatch Fulfilled: {self.isDone}
 '''
+# Time Order was Placed: {self.timeCreated},
+
+def main():
+    ver = '0.0'
 
 if __name__ == '__main__':
-    v = {
+    main()
+"""    v = {
             "vid": 98765,
             "serviceType": "DryCleaning",
             "vehicleMake": "Tesla",
@@ -110,3 +114,4 @@ print(''' Dispatch Record SQL Table
 |___________|___________|___________|___________|___________|___________|_______________|___________|
 
 ''')
+"""
