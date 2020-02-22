@@ -42,3 +42,5 @@ Small potatoes
 ----------------
 22/2/2020
 
+16:05
+Ready to start testing api call. Uncommenting stuff
