@@ -54,6 +54,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             }
         ]
         path = self.path
+        print(path)
         responseDict = {}
         if '/vehicleRequest' in path:
             # dictionary = self.getPOSTBody()
@@ -83,7 +84,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             status = 200
 
         else:
-            status = 404
+            status = 405
 
         self.send_response(status)
         self.end_headers()
