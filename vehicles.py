@@ -79,7 +79,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             # dictionary["timeOrderMade"] = strToDateTime
 
             # dispatch = Dispatch(**dictionary)
-
+            vehicle["destination"]["lon"] = 231.12
+            vehicle["destination"]["lat"] = 1.21
             responseDict = vehicle
             status = 200
 
