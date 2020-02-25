@@ -13,8 +13,9 @@ potentially urgent messages and quickfixes that may need their attention
 3b. Pass, (redirected to dashboard.html)
 4.  Dashboard (onload will make GET request for fleet manager's fleet info to populate tables and bulletin)
 
+File Structure:
 /experiments
-    # As the name may imply, small experiments for testing certain functionality and behaviour
+    # As the name may imply, small experiments for testing certain functionality and behaviour on the local
 
 /Notes and Design
     # This is where I've thrown both my API design and the thought processes I had going into the design process
