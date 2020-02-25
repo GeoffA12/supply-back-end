@@ -1,46 +1,37 @@
-17/2/2020
-01:19
-testAPI is the temp name, not really test, treating it like actual API. Definitely v0.0. Getting the hand of it, but
-will need clarification on things such has, structure, Demand and Supply DB writing and other resources. IGNORE THE
-PYTHON FILE FOR NOW.
+Supply Backend ReadMe
 
-19:51
-Things getting real topsy-turvy around here about APIs, just remember KISS. Keep It Simple Stupid. Potential parameters
-added and how they might be utilised for for CURD methods. CURD (Create, Update, Read, Delete) Still ignore python
-file.
+Functionality and Connections: (Will have the same content in the /supply-front-end/readMe.txt, so can skip this part if you already read that)
+User will open start at our login.html, after credential validation, they are redirected to our dashboard.html. 
+Onload, our dashboard will make a GET request to our fleetHandler(not implemented as of this current update) to fetch 
+fleet data and vehicles of said fleet(s) and load them into our table(s). 
+From there the user will be able to see tables of their fleet(s) and a bulletin that will display
+potentially urgent messages and quickfixes that may need their attention
 
-20:17
-Test2
+1.  Login (input credentials)
+2.  Credential validation (input is POSTed to login.py to check DB)
+3a. Fail, (reprompt credentials)
+3b. Pass, (redirected to dashboard.html)
+4.  Dashboard (onload will make GET request for fleet manager's fleet info to populate tables and bulletin)
 
-20:34
-Updating for more semantic names
-----------------
-18/2/2020
-06:00
-Inspired by OpenWeather style of documentation. Am I conflating design and documentation?
+/experiments
+    # As the name may imply, small experiments for testing certain functionality and behaviour
 
-06:42
-Generic(no parameter) GET response added
-----------------
-19/2/2020
-02:51
-Skeleton dispatch class made and iterated so help with understanding what a dispatch is.
-ASCII Artified an SQL Dispatch Record Table.
-----------------
-21/2/2020
-4:18
-Updated small things about json objects in API design. Will continue to morph and iterate based on decisions made about
-table names and columns
-Added vehicle request handling in supplyBE do_POST. Should created a Dispatch() object of the order and responds with
-data of the vehicle that was dispatched
-webservice do_GET() should be able to handle zero parameter get requests. Just returns the list of vehicles.
-Need to update ASCII art of dispatch table on Dispatch.py
+/Notes and Design
+    # This is where I've thrown both my API design and the thought processes I had going into the design process
 
-17:51
-Small potatoes
+    # As the name may imply, really just chicken scratchings and notes
+    /apiNotes.txt
 
-----------------
-22/2/2020
+    # The actual design and documentation of the vehicle request API
+    # It contains some documentation of allowable parameters, example calls and some
+    # pseudocode for what I might expect to have to write in the actual implementation
+    /vehiclesReqDesign.md
 
-16:05
-Ready to start testing api call. Uncommenting stuff
+/dispatch.py
+    # This was just a quick and dirty dispatch class I decided to make to help myself try and understand what Dispatch really was
+    # and how it might manifest itself at an implementation level
+
+/vehicle.py
+    # This is our vehicle request handler. It will be receiving an HTTPs string from our Demand Backend asking for a vehicle
+    # as well as an order.json which we will parse to make a dispach to add to our dispatch record table.
+    # We will then responde with vehicle data of the vehicle that has been selected as that order's courier (however we makde that desicion TO BE IMPLEMENTED)
