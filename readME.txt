@@ -15,6 +15,7 @@ potentially urgent messages and quickfixes that may need their attention
 
 File Structure:
 /experiments
+
     # As the name may imply, small experiments for testing certain functionality and behaviour on the local
 
 /Notes and Design
