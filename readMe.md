@@ -15,6 +15,7 @@ This is where I've thrown both my API design and the thought processes I had goi
 
 This was just a quick and dirty dispatch class I decided to make to help myself try and understand what Dispatch really was
 and how it might manifest itself at an implementation level
+This doesn't actually interact with anything yet
 /dispatch.py
 
 This is our vehicle request handler. It will be receiving an HTTPs string from our Demand Backend asking for a vehicle
