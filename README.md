@@ -1,4 +1,10 @@
-# Supply Backend
+# WeGo Services Supply Frontend
+[![Generic badge](https://img.shields.io/badge/version-1.0-<COLOR>.svg)](https://shields.io/)
+[![Generic badge](https://img.shields.io/badge/build-stable-<COLOR>.svg)](https://shields.io/) 
+[![Generic badge](https://img.shields.io/badge/code_style-SWETeam22-teal.svg)](https://github.com/komoto415/COSC3339/blob/master/Trying%20Markdown/StyleAndDirectoryGuide.md)
+
+## Features
+
 ```
 As the name may imply, small experiments for testing certain functionality and behaviour on the local
 /experiments
