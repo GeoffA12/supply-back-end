@@ -57,7 +57,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         path = self.path
         print(path)
         responseDict = {}
-        if '/vehicleRequest' in path:
+        if '/vehicleRequest' in path:   
             dictionary = self.getPOSTBody()
 
             # Until we get a vehicle DB, just this for now. But this would otherwise
