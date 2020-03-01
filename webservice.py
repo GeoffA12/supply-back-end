@@ -4,8 +4,8 @@ import json
 import urllib.parse
 import mysql.connector as sqldb
 import requests
-from .dispatch import Dispatch
-from .serverutils import connectToSQLDB
+from dispatch import Dispatch
+from serverutils import connectToSQLDB
 import datetime
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
@@ -91,6 +91,9 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             vehicle["destination"]["lon"] = 231.12
             vehicle["destination"]["lat"] = 1.21
             responseDict = vehicle
+
+
+
             status = 200
 
         else:
