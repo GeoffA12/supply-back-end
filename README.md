@@ -1,31 +1,26 @@
-# WeGo Services Supply Frontend
+# WeGo Services Supply Backend
 [![Generic badge](https://img.shields.io/badge/version-1.0-<COLOR>.svg)](https://shields.io/)
-[![Generic badge](https://img.shields.io/badge/build-stable-<COLOR>.svg)](https://shields.io/) 
+[![Generic badge](https://img.shields.io/badge/build-unstable-red.svg)](https://shields.io/) 
 [![Generic badge](https://img.shields.io/badge/code_style-SWETeam22-teal.svg)](https://github.com/komoto415/COSC3339/blob/master/Trying%20Markdown/StyleAndDirectoryGuide.md)
 
-## Features
+## What to Expect
+This repository will compose of mostly unique backend components to our supply side clients. This such as our vehicle
+and vehicle request APIs, fleet monitoring and fleet manager interactions
+ 
+## Feature Set
+For our customer, our web service will enable us to communicate to them information about the courier of their order(s)
+and be able to receive live updates about the status for an order in-progress. 
 
-```
-As the name may imply, small experiments for testing certain functionality and behaviour on the local
-/experiments
+For our fleet managers, it means a way that they'll be able to interact with the both their fleets and vehicles through
+a single web service where they can push and receive updates to their fleets and vehicles.  
 
-This is where I've thrown both my API design and the thought processes I had going into the design process
-/Notes and Design
-    As the name may imply, really just chicken scratchings and notes
-    /apiNotes.txt
-
-    The actual design and documentation of the vehicle request API
-    It contains some documentation of allowable parameters, example calls and some
-    pseudocode for what I might expect to have to write in the actual implementation
-    /vehiclesReqDesign.md
-
-This was just a quick and dirty dispatch class I decided to make to help myself try and understand what Dispatch really was
-and how it might manifest itself at an implementation level
-This doesn't actually interact with anything yet
-/dispatch.py
-
-This is our vehicle request handler. It will be receiving an HTTPs string from our Demand Backend asking for a vehicle
-as well as an order.json which we will parse to make a dispach to add to our dispatch record table.
-We will then responde with vehicle data of the vehicle that has been selected as that order's courier (however we makde that desicion TO BE IMPLEMENTED)
-/vehicle.py
-```
+#### Below is a table of our functionality and intended future features
+|Functionality                  |Status     
+|:---                           |:---
+|Receives order from demandBE   |Functional
+|HTTPS response                 |Functional
+|Returns vehicle data           |Functional
+|Creating dispatch              |Functional?
+|Interaction with vehicle table |Queued
+|Update dispatch record         |Queued
+|
