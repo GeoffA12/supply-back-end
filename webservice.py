@@ -58,7 +58,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         print(path)
         responseDict = {}
         if '/vehicleRequest' in path:   
-            dictionary = self.getPOSTBody()
+            order = self.getPOSTBody()
 
             # Until we get a vehicle DB, just this for now. But this would otherwise
             # Pull vehicle data from the vehicle table and choose one.
@@ -67,32 +67,38 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
             sqlConnection = connectToSQLDB()
 
-            vehicle = self.getVehicles[1]
+            # vehicle = self.getVehicles[1]
             vehicleCursor = sqlConnection.cursor()
-            vehicleCursor.execute('SELECT * FROM vehicles WHERE status = Available')
 
-            dictionary["vid"] = vehicle["vid"]
+            # Query all vehicles whose status is 'Active'
+            vehicleCursor.execute('SELECT * FROM vehicles WHERE status = Active')
+            vehicleEntries = vehicleCursor.fetchAll();
+
+            vehicleList = [x for x in vehicleEntries]
+            vehicle = vehicleList[0]
+
+            # del vehicle
+
+            order["vid"] = vehicle["vid"]
 
             attrToTuple = vehicle.pop("location")
-            dictionary["loc_0"] = (attrToTuple["lon"], attrToTuple["lat"])
+            order["loc_0"] = (attrToTuple["lon"], attrToTuple["lat"])
 
-            attrToTuple = dictionary.pop("location")
+            attrToTuple = order.pop("location")
 
             # lonlatDest = do something with map service to determine lon lat version of user human readable,
             # or maybe this happens on supply end
 
-            dictionary["loc_f"] = (attrToTuple["lon"], attrToTuple["lat"])
+            order["loc_f"] = (attrToTuple["lon"], attrToTuple["lat"])
 
-            strToDateTime = datetime.strptime(dictionary["timeOrderMade"], '%H:%M:%S').time()
-            dictionary["timeOrderMade"] = strToDateTime
+            strToDateTime = datetime.strptime(order["timeOrderMade"], '%H:%M:%S').time()
+            order["timeOrderMade"] = strToDateTime
 
-            dispatch = Dispatch(**dictionary)
+            dispatch = Dispatch(**order)
 
             vehicle["destination"]["lon"] = 231.12
             vehicle["destination"]["lat"] = 1.21
             responseDict = vehicle
-
-
 
             status = 200
 
