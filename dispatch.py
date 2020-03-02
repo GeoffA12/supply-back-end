@@ -1,7 +1,7 @@
 from datetime import datetime
 
 class Dispatch(object):
-    ver = '0.2'
+    ver = '0.3'
 
     def __init__(self, **kwargs):
         self.sType = kwargs["serviceType"]
@@ -29,8 +29,7 @@ class Dispatch(object):
 
     def __repr__(self):
         return f'Dispatch(' \
-               f'{self.sType}, {self.vid}, {self.cid}, {self.oid}, {self.loc_0}, {self.loc_f}, {self.timeCreated}' \
-               f', {self.isDone})'
+               f'{self.sType}, {self.vid}, {self.cid}, {self.oid}, {self.loc_0}, {self.loc_f}, {self.timeCreated}'
 
     def __str__(self):
         return f'''Service Type: {self.sType}

@@ -1,50 +1,36 @@
 import http.server
 from http.server import BaseHTTPRequestHandler
 import json
-import urllib.parse
 import mysql.connector as sqldb
 import requests
 from dispatch import Dispatch
 from serverutils import connectToSQLDB
 import datetime
+import copy
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
-    ver = '0.0'
+    ver = '0.2'
 
     def getVehicles(self):
-        vehicleList = [
-            {
-                "vid": 12345,
-                "serviceType": "DryCleaning",
-                "vehicleMake": "Toyota",
-                "liscencePlate": "QW3456",
-                "status": "Active",
-                "location": {
-                    "lon": 23.42,
-                    "lat": 42.12
-                },
-                "destination": {
-                    "lon": 125.12,
-                    "lat": 213.21
-                }
+        vehicles = (
+            (12345, 'Inactive', 'qw3256', 34, ' Toyota', 'V-9', 23.42, 42.12,),
+            (13579, 'Active', 'gf9012', 34, 'Mercedes', 'V-9', 102.43, 231.12,),
+            (12345, 'Active', 'qw3256', 34, 'Toyota', 'V-10', 12.51, 87.51,),
+            (12345, 'Maintenance', 'qw3256', 34, 'Toyota', 'V-8', 23.42, 124.31,)
+        )
+        return vehicles
+    def getOrder(self):
+        order = {
+            'orderID': 1234,
+            'customerID': 42131,
+            'serviceType': 'DryCleaning',
+            'destination': {
+                'lon': 123.12,
+                'lat': 51.12
             },
-            {
-                "vid": 98765,
-                "serviceType": "DryCleaning",
-                "vehicleMake": "Tesla",
-                "liscencePlate": "TE1241",
-                "status": "Inactive",
-                "location": {
-                    "lon": 45.12,
-                    "lat": 10.31
-                },
-                "destination": {
-                    "lon": None,
-                    "lat": None
-                }
-            }
-        ]
-        return vehicleList
+            'timeOrderMade': '12:23:43',
+        }
+        return order
 
     # How to convert the body from a string to a dictionary
     # use 'loads' to convert from byte/string to a dictionary!
@@ -58,47 +44,73 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         print(path)
         responseDict = {}
         if '/vehicleRequest' in path:   
-            order = self.getPOSTBody()
+            # order = self.getPOSTBody()
 
+            order = self.getOrder()
             # Until we get a vehicle DB, just this for now. But this would otherwise
             # Pull vehicle data from the vehicle table and choose one.
             # And of course as progress, we will add mor elogic to the
             # decision process of which vehicle is selected
-
+            '''
             sqlConnection = connectToSQLDB()
-
-            # vehicle = self.getVehicles[1]
             vehicleCursor = sqlConnection.cursor()
-
+            '''
+            '''
             # Query all vehicles whose status is 'Active'
             vehicleCursor.execute('SELECT * FROM vehicles WHERE status = Active')
-            vehicleEntries = vehicleCursor.fetchAll();
+            vehicleEntries = vehicleCursor.fetchAll();  
+            '''
 
-            vehicleList = [x for x in vehicleEntries]
-            vehicle = vehicleList[0]
+            vehicles = self.getVehicles()
 
-            # del vehicle
+            filteredVehicles = list(filter(lambda x: x[1] == 'Active', vehicles))
+            print(filteredVehicles)
+            vehicle = filteredVehicles[0]
 
-            order["vid"] = vehicle["vid"]
+            # Capture vehicle tuple into its separate variables
+            vid, status, liscensePlate, fleetId, make, model, vLon, vLat = vehicle
 
-            attrToTuple = vehicle.pop("location")
-            order["loc_0"] = (attrToTuple["lon"], attrToTuple["lat"])
+            # Seeing if the unpacking worked d:
+            print(vehicle)
+            print(vid)
+            print(status)
+            print(liscensePlate)
+            print(fleetId)
+            print(make)
+            print(model)
+            print(vLon)
+            print(vLat)
 
-            attrToTuple = order.pop("location")
+            vehicleDict = {
+                'vid': vid,
+                'status': 'Active',
+                'liscensePlate': liscensePlate,
+                'make': make,
+                'model': model,
+                'curLocation': {
+                    'lon': vLon,
+                    'lat': vLat
+                },
+            }
 
-            # lonlatDest = do something with map service to determine lon lat version of user human readable,
-            # or maybe this happens on supply end
+            print(vehicleDict)
 
-            order["loc_f"] = (attrToTuple["lon"], attrToTuple["lat"])
+            # Deep copy the dictionary because we'll need to mutate what's in here a bit. Also separates this from the already
+            # existing containers floating around
+            dispatchDict = copy.deepcopy(order);
+            dispatchDict['vid'] = vid
 
-            strToDateTime = datetime.strptime(order["timeOrderMade"], '%H:%M:%S').time()
-            order["timeOrderMade"] = strToDateTime
+            # Turn a destination dictionary into a tupled pair
+            attrToTuple = dispatchDict.pop('destination');
+            print(attrToTuple)
+            dispatchDict['loc_f'] = (attrToTuple['lon'], attrToTuple['lat'])
+            dispatchDict['loc_0'] = (vLon, vLat)
 
-            dispatch = Dispatch(**order)
+            print(dispatchDict)
 
-            vehicle["destination"]["lon"] = 231.12
-            vehicle["destination"]["lat"] = 1.21
-            responseDict = vehicle
+            dispatch = Dispatch(**dispatchDict)
+
+            print(dispatch)
 
             status = 200
 

@@ -7,7 +7,7 @@ import requests
 # from dispatch import Dispatch
 # import datetime
 
-ver = '0.0'
+ver = '0.2'
 
 def connectToSQLDB():
     return sqldb.connect(user='root', password='password', database='team22demand', port=6022)
