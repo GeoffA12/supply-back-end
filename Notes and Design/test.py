@@ -1,55 +1,22 @@
-import random
 from dispatch import Dispatch
+import copy
 def main():
-    # vehicles = [
-    #     {
-    #         "vid": 12345,
-    #         "serviceType": "DryCleaning",
-    #         "vehicleMake": "Toyota",
-    #         "liscencePlate": "QW3456",
-    #         "status": "Active",
-    #         "location": {
-    #             "lon": 23.42,
-    #             "lat": 42.12,
-    #         },
-    #         "destination": {
-    #             "lon": 13.12,
-    #             "lat": 112.61
-    #         }
-    #     },
-    #     {
-    #         "vid": 98765,
-    #         "serviceType": "PartyPlanner",
-    #         "vehicleMake": "Tesla",
-    #         "liscencePlate": "TE1241",
-    #         "status": "Inactive",
-    #         "location": {
-    #             "lon": 45.12,
-    #             "lat": 10.31,
-    #         },
-    #         "destination": {
-    #             "lon": None,
-    #             "lat": None
-    #         }
-    #     }
-    # ]
-
     vehicles = (
         (12345, 'Inactive',     'qw3256',   34,   ' Toyota',    'V-9',      23.42,  42.12,),
-        (13579, 'Active',       'gf9012',   34,    'Merdeces', 'V-9',      102.43, 231.12, ),
+        (13579, 'Active',       'gf9012',   34,    'Mercedes', 'V-9',      102.43, 231.12, ),
         (12345, 'Active',       'qw3256',   34,     'Toyota',   'V-10',     12.51,  87.51, ),
         (12345, 'Maintenance',  'qw3256',   34,     'Toyota',   'V-8',      23.42,  124.31, )
     )
 
     order = {
-        'orderId' : 1234,
-        'custId' : 42131,
+        'orderID' : 1234,
+        'customerID' : 42131,
         'serviceType' : 'DryCleaning',
         'destination' : {
             'lon' : 123.12,
             'lat' : 51.12
         },
-        'timeOrderCreated' : '12:23:43',
+        'timeOrderMade' : '12:23:43',
     }
 
     '''
@@ -65,8 +32,11 @@ def main():
     print(filteredVehicles)
     vehicle = filteredVehicles[0]
 
-    vid, status, liscensePlate, fleetId, make, model, lon, lat = vehicle
 
+    # Capture vehicle tuple into its separate variables
+    vid, status, liscensePlate, fleetId, make, model, vLon, vLat = vehicle
+
+    # Seeing if the unpacking worked d:
     print(vehicle)
     print(vid)
     print(status)
@@ -74,8 +44,39 @@ def main():
     print(fleetId)
     print(make)
     print(model)
-    print(lon)
-    print(lat)
+    print(vLon)
+    print(vLat)
+
+    vehicleDict = {
+        'vid' : vid,
+        'status' :  'Active',
+        'liscensePlate' : liscensePlate,
+        'make' : make,
+        'model' : model,
+        'curLocation' : {
+            'lon' : vLon,
+            'lat' : vLat
+        },
+    }
+
+    print(vehicleDict)
+
+    # Deep copy the dictionary because we'll need to mutate what's in here a bit. Also separates this from the already
+    # existing containers floating around
+    dispatchDict = copy.deepcopy(order);
+    dispatchDict['vid'] = vid
+
+    # Turn a destination dictionary into a tupled pair
+    attrToTuple = dispatchDict.pop('destination');
+    print(attrToTuple)
+    dispatchDict['loc_f'] = (attrToTuple['lon'], attrToTuple['lat'])
+    dispatchDict['loc_0'] = (vLon, vLat)
+
+    print(dispatchDict)
+
+    dispatch = Dispatch(**dispatchDict)
+
+    print(dispatch)
 
 if __name__ == '__main__':
     main()
