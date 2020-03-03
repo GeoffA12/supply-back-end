@@ -13,10 +13,10 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
     def getVehicles(self):
         vehicles = (
-            (12345, 'Inactive', 'qw3256', 34, ' Toyota', 'V-9', 23.42, 42.12,),
-            (13579, 'Active', 'gf9012', 34, 'Mercedes', 'V-9', 102.43, 231.12,),
-            (12345, 'Active', 'qw3256', 34, 'Toyota', 'V-10', 12.51, 87.51,),
-            (12345, 'Maintenance', 'qw3256', 34, 'Toyota', 'V-8', 23.42, 124.31,)
+            (12345, 'Inactive', 'qw3256', 34, 'Toyota', 'V-9', 23.42, 42.12),
+            (13579, 'Active', 'gf9012', 34, 'Mercedes', 'V-9', 102.43, 231.12),
+            (12345, 'Active', 'qw3256', 34, 'Toyota', 'V-10', 12.51, 87.51),
+            (12345, 'Maintenance', 'qw3256', 34, 'Toyota', 'V-8', 23.42, 124.31)
         )
         return vehicles
     def getOrder(self):
