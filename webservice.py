@@ -23,7 +23,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         order = {
             'orderID': 1234,
             'customerID': 42131,
-            'serviceType': 'DryCleaning',
+            'type': 'DryCleaning',
             'destination': {
                 'lon': 123.12,
                 'lat': 51.12
@@ -57,7 +57,10 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             '''
             '''
             # Query all vehicles whose status is 'Active'
-            vehicleCursor.execute('SELECT * FROM vehicles WHERE status = Active')
+            vehicleCursor.execute('SELECT * FROM vehicles, fleets 
+                                WHERE status = Active
+                                and type = drycleaning
+                                and vehicles.fleetid and fleets.fleetid')
             vehicleEntries = vehicleCursor.fetchAll();  
             '''
 
@@ -94,7 +97,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             }
 
             print(vehicleDict)
-
             # Deep copy the dictionary because we'll need to mutate what's in here a bit. Also separates this from the already
             # existing containers floating around
             dispatchDict = copy.deepcopy(order);
