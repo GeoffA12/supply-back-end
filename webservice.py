@@ -102,6 +102,13 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             dispatchDict = copy.deepcopy(order);
             dispatchDict['vid'] = vid
 
+            ''' I think :C
+            SELECT * from Vehicle, Fleet WHERE
+            status = Available
+            and serviceType = some serviceType
+            and Vehicle.fleetId = Fleet.fleetId
+            '''
+
             # Turn a destination dictionary into a tupled pair
             attrToTuple = dispatchDict.pop('destination');
             print(attrToTuple)
