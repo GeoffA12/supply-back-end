@@ -1,4 +1,4 @@
-.DS_Store
-/.ideas
-/__pycache__
-.xml
+*.DS_Store
+*/.ideas
+*/__pycache__
+*.xml
