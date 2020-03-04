@@ -41,6 +41,3 @@ End Location: {self.loc_f}
 Time Order was Placed: {self.timeCreated},
 Dispatch Status: {self.status}
 '''
-
-if __name__ == '__main__':
-    Dispatch()
