@@ -8,8 +8,16 @@ from serverutils import connectToSQLDB
 import datetime
 import copy
 
+def connectToSQLDB():
+    return sqldb.connect(user='root', password='password', database='team22supply', port=6022)
+
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
     ver = '0.2'
+
+    def getPOSTBody(self):
+        length = int(self.headers['content-length'])
+        body = self.rfile.read(length)
+        return json.loads(body)
 
     def getVehicles(self):
         vehicles = (
@@ -123,8 +131,62 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
             status = 200
 
+        elif '/loginHandler' in path:
+            dictionary = self.getPOSTBody()
+            # To access a specific key from the dictionary:
+            print(dictionary)
+            username = dictionary['username']
+            password = dictionary['password']
+
+            sqlConnection = connectToSQLDB()
+            cursor = sqlConnection.cursor()
+            cursor.execute('SELECT username, password FROM customers')
+            rows = cursor.fetchall()
+            usernameList = [x[0] for x in rows]
+            passwordList = [x[1] for x in rows]
+
+            # Make a dictionary from the usernameList and passwordList where the key:value pairs
+            # are username:password
+            userpass = dict(zip(usernameList, passwordList))
+
+            if username in userpass and userpass[username] == password:
+                status = 200
+
+            # We'll send a 401 code back to the client if the user hasn't registered in our database
+            else:
+                status = 401
+
+        # If we are receiving a request to register an account
+        elif '/registerHandler' in path:
+            dictionary = self.getPOSTBody()
+            # To access a specific key from the dictionary:
+            print(dictionary)
+            username = dictionary['username']
+            password = dictionary['password']
+            email = dictionary['email']
+            phone = dictionary['phoneNumber']
+
+            sqlConnection = connectToSQLDB()
+            cursor = sqlConnection.cursor()
+            cursor.execute('SELECT username FROM customers')
+            rows = cursor.fetchall()
+            usernameList = [x[0] for x in rows]
+
+            # The equivalent of arr.contains(e)
+            if username in usernameList:
+                status = 401
+            else:
+                status = 200
+                newCursor = sqlConnection.cursor()
+                print(username)
+                print(password)
+                newCursor.execute('INSERT INTO customers (username, password, email, phone) VALUES (%s, %s, %s, %s)',
+                                  (username, password, email, phone))
+                sqlConnection.commit()
+                responseDict['Success'] = True
+
         else:
-            status = 405
+            status = 404
 
         self.send_response(status)
         self.end_headers()
