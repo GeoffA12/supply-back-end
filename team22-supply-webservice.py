@@ -4,7 +4,7 @@ import json
 import mysql.connector as sqldb
 import requests
 from dispatch import Dispatch
-from serverutils import connectToSQLDB
+# from serverutils import connectToSQLDB
 import datetime
 import copy
 
