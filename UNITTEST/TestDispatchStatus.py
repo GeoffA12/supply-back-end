@@ -1,9 +1,8 @@
 import unittest
 import sys
 
-sys.path.insert(1, '../ENUMS/')
-
-from dispatchstatus import status
+sys.path.insert(1, '../')
+from ENUMS.dispatchstatus import status
 
 class MyTestCase(unittest.TestCase):
 

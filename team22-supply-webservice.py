@@ -199,8 +199,12 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         path = self.path
         status = 200
         responseDict = {}
-        if path.endswith('/vehicleRequest'):
+        if '/vehicleRequest' in path:
             responseDict = vehicleList
+
+        elif '/etaRequest' in path:
+            print()
+
         elif True:
             print()
 

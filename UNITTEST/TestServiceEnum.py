@@ -1,9 +1,8 @@
 import unittest
 import sys
 
-sys.path.insert(1, '../ENUMS/')
-
-from servicetype import type
+sys.path.insert(1, '../')
+from ENUMS.servicetype import type
 
 class MyTestCase(unittest.TestCase):
 

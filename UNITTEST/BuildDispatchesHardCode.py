@@ -3,7 +3,6 @@ import copy
 import sys
 
 sys.path.insert(1, '../')
-
 from dispatch import Dispatch
 
 class TestDispatch(unittest.TestCase):
@@ -49,13 +48,8 @@ class TestDispatch(unittest.TestCase):
 
         dispatch = Dispatch(**dispatchDict)
 
-        print(dispatch.__repr__())
-
-        self.assertEqual(dispatch.sType, 'DryCleaning')
-        self.assertEqual(dispatch.status, 'In Progress')
-
-        dispatch.dispatchFulfilled()
-        self.assertEqual(dispatch.status, 'Completed')
+        print(dispatch)
+        print(type(dispatch.status))
 
 if __name__ == '__main__':
     unittest.main()
