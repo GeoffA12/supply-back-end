@@ -32,10 +32,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             'orderID': 1234,
             'customerID': 42131,
             'type': 'DryCleaning',
-            'destination': {
-                'lon': 123.12,
-                'lat': 51.12
-            },
+            'destination': "St. Edward's University",
             'timeOrderMade': '12:23:43',
         }
         return order
@@ -51,7 +48,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         path = self.path
         print(path)
         responseDict = {}
-        if '/vehicleRequest' in path:   
+        if '/vehicleRequest' in path:
+            sqlConnection = connectToSQLDB()
             # order = self.getPOSTBody()
 
             order = self.getOrder()
@@ -94,7 +92,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
             vehicleDict = {
                 'vid': vid,
-                'status': 'Active',
                 'liscensePlate': liscensePlate,
                 'make': make,
                 'model': model,
@@ -120,6 +117,14 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             # Turn a destination dictionary into a tupled pair
             attrToTuple = dispatchDict.pop('destination');
             print(attrToTuple)
+
+            # Here we would translate human readable to geo code, but for now we'll hardcode some points
+
+            attrToTuple = {
+                'lon' : 123.12,
+                'lat' : 32.1
+            }
+
             dispatchDict['loc_f'] = (attrToTuple['lon'], attrToTuple['lat'])
             dispatchDict['loc_0'] = (vLon, vLat)
 
@@ -129,6 +134,20 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
             print(dispatch)
 
+            dispatchCursor = sqlConnection.cursor()
+            dispatchCursor.execute('INSERT INTO dispatch '
+                                   '(vid, customerid, orderid, start_lat, start_lon, '
+                                   'end_lat, end_lon, start_time, status) VALUES '
+                                   '(%s %s %s %s %s %s %s %s %s)',
+                                   (
+                                    dispatch.vid, dispatch.cid, dispatch.oid,
+                                    dispatch.loc_0['lat'], dispatch.loc_0['lon'],
+                                    dispatch.loc_f['lat'], dispatch.loc_f['lon'],
+                                    dispatch.timeCreated, dispatch.status
+                                   )
+                                  )
+            sqlConnection.commit()
+            responseDict['vehicle'] = vehicleDict
             status = 200
 
         elif '/loginHandler' in path:
@@ -140,7 +159,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
             sqlConnection = connectToSQLDB()
             cursor = sqlConnection.cursor()
-            cursor.execute('SELECT username, password FROM customers')
+            cursor.execute('SELECT username, password FROM fleetmanagers')
             rows = cursor.fetchall()
             usernameList = [x[0] for x in rows]
             passwordList = [x[1] for x in rows]
@@ -168,7 +187,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
             sqlConnection = connectToSQLDB()
             cursor = sqlConnection.cursor()
-            cursor.execute('SELECT username FROM customers')
+            cursor.execute('SELECT username FROM fleetmanagers')
             rows = cursor.fetchall()
             usernameList = [x[0] for x in rows]
 
@@ -180,7 +199,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 newCursor = sqlConnection.cursor()
                 print(username)
                 print(password)
-                newCursor.execute('INSERT INTO customers (username, password, email, phone) VALUES (%s, %s, %s, %s)',
+                newCursor.execute('INSERT INTO fleetmanagers (username, password, email, phone) VALUES (%s, %s, %s, %s)',
                                   (username, password, email, phone))
                 sqlConnection.commit()
                 responseDict['Success'] = True
