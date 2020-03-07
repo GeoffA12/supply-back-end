@@ -3,7 +3,6 @@ import copy
 import sys
 
 sys.path.insert(1, '../')
-
 from dispatch import Dispatch
 
 class TestDispatch(unittest.TestCase):
@@ -21,10 +20,7 @@ class TestDispatch(unittest.TestCase):
             'orderID': 1234,
             'customerID': 42131,
             'serviceType': 'DryCleaning',
-            'destination': {
-                'lon': 123.12,
-                'lat': 51.12
-            },
+            'destination': "St. Edward's University",
             'timeOrderMade': '12:23:43',
         }
 
@@ -43,19 +39,22 @@ class TestDispatch(unittest.TestCase):
 
         # Turn a destination dictionary into a tupled pair
         attrToTuple = dispatchDict.pop('destination');
+        print(attrToTuple)
+
+        # Here we would translate human readable to geo code, but for now we'll hardcode some points
+
+        attrToTuple = {
+            'lon': 123.12,
+            'lat': 32.1
+        }
 
         dispatchDict['loc_f'] = (attrToTuple['lon'], attrToTuple['lat'])
         dispatchDict['loc_0'] = (vLon, vLat)
 
         dispatch = Dispatch(**dispatchDict)
 
-        print(dispatch.__repr__())
-
-        self.assertEqual(dispatch.sType, 'DryCleaning')
-        self.assertEqual(dispatch.status, 'In Progress')
-
-        dispatch.dispatchFulfilled()
-        self.assertEqual(dispatch.status, 'Completed')
+        print(dispatch)
+        print(type(dispatch.status))
 
 if __name__ == '__main__':
     unittest.main()

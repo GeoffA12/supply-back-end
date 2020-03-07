@@ -4,12 +4,20 @@ import json
 import mysql.connector as sqldb
 import requests
 from dispatch import Dispatch
-from serverutils import connectToSQLDB
+# from serverutils import connectToSQLDB
 import datetime
 import copy
 
+def connectToSQLDB():
+    return sqldb.connect(user='root', password='password', database='team22supply', port=6022)
+
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
     ver = '0.2'
+
+    def getPOSTBody(self):
+        length = int(self.headers['content-length'])
+        body = self.rfile.read(length)
+        return json.loads(body)
 
     def getVehicles(self):
         vehicles = (
@@ -24,10 +32,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             'orderID': 1234,
             'customerID': 42131,
             'type': 'DryCleaning',
-            'destination': {
-                'lon': 123.12,
-                'lat': 51.12
-            },
+            'destination': "St. Edward's University",
             'timeOrderMade': '12:23:43',
         }
         return order
@@ -43,7 +48,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         path = self.path
         print(path)
         responseDict = {}
-        if '/vehicleRequest' in path:   
+        if '/vehicleRequest' in path:
+            sqlConnection = connectToSQLDB()
             # order = self.getPOSTBody()
 
             order = self.getOrder()
@@ -86,7 +92,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
             vehicleDict = {
                 'vid': vid,
-                'status': 'Active',
                 'liscensePlate': liscensePlate,
                 'make': make,
                 'model': model,
@@ -112,6 +117,14 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             # Turn a destination dictionary into a tupled pair
             attrToTuple = dispatchDict.pop('destination');
             print(attrToTuple)
+
+            # Here we would translate human readable to geo code, but for now we'll hardcode some points
+
+            attrToTuple = {
+                'lon' : 123.12,
+                'lat' : 32.1
+            }
+
             dispatchDict['loc_f'] = (attrToTuple['lon'], attrToTuple['lat'])
             dispatchDict['loc_0'] = (vLon, vLat)
 
@@ -121,10 +134,78 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
             print(dispatch)
 
+            dispatchCursor = sqlConnection.cursor()
+            dispatchCursor.execute('INSERT INTO dispatch '
+                                   '(vid, customerid, orderid, start_lat, start_lon, '
+                                   'end_lat, end_lon, start_time, status) VALUES '
+                                   '(%s %s %s %s %s %s %s %s %s)',
+                                   (
+                                    dispatch.vid, dispatch.cid, dispatch.oid,
+                                    dispatch.loc_0['lat'], dispatch.loc_0['lon'],
+                                    dispatch.loc_f['lat'], dispatch.loc_f['lon'],
+                                    dispatch.timeCreated, dispatch.status
+                                   )
+                                  )
+            sqlConnection.commit()
+            responseDict['vehicle'] = vehicleDict
             status = 200
 
+        elif '/loginHandler' in path:
+            dictionary = self.getPOSTBody()
+            # To access a specific key from the dictionary:
+            print(dictionary)
+            username = dictionary['username']
+            password = dictionary['password']
+
+            sqlConnection = connectToSQLDB()
+            cursor = sqlConnection.cursor()
+            cursor.execute('SELECT username, password FROM fleetmanagers')
+            rows = cursor.fetchall()
+            usernameList = [x[0] for x in rows]
+            passwordList = [x[1] for x in rows]
+
+            # Make a dictionary from the usernameList and passwordList where the key:value pairs
+            # are username:password
+            userpass = dict(zip(usernameList, passwordList))
+
+            if username in userpass and userpass[username] == password:
+                status = 200
+
+            # We'll send a 401 code back to the client if the user hasn't registered in our database
+            else:
+                status = 401
+
+        # If we are receiving a request to register an account
+        elif '/registerHandler' in path:
+            dictionary = self.getPOSTBody()
+            # To access a specific key from the dictionary:
+            print(dictionary)
+            username = dictionary['username']
+            password = dictionary['password']
+            email = dictionary['email']
+            phone = dictionary['phoneNumber']
+
+            sqlConnection = connectToSQLDB()
+            cursor = sqlConnection.cursor()
+            cursor.execute('SELECT username FROM fleetmanagers')
+            rows = cursor.fetchall()
+            usernameList = [x[0] for x in rows]
+
+            # The equivalent of arr.contains(e)
+            if username in usernameList:
+                status = 401
+            else:
+                status = 200
+                newCursor = sqlConnection.cursor()
+                print(username)
+                print(password)
+                newCursor.execute('INSERT INTO fleetmanagers (username, password, email, phone) VALUES (%s, %s, %s, %s)',
+                                  (username, password, email, phone))
+                sqlConnection.commit()
+                responseDict['Success'] = True
+
         else:
-            status = 405
+            status = 404
 
         self.send_response(status)
         self.end_headers()
@@ -137,8 +218,12 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         path = self.path
         status = 200
         responseDict = {}
-        if path.endswith('/vehicleRequest'):
+        if '/vehicleRequest' in path:
             responseDict = vehicleList
+
+        elif '/etaRequest' in path:
+            print()
+
         elif True:
             print()
 

@@ -1,7 +1,10 @@
 from datetime import datetime
+import sys
+
+from ENUMS.dispatchstatus import status
 
 class Dispatch(object):
-    ver = '0.3'
+    ver = '0.4'
 
     def __init__(self, **kwargs):
         self.sType = kwargs["serviceType"]
@@ -11,7 +14,7 @@ class Dispatch(object):
         self.loc_0 = kwargs["loc_0"]
         self.loc_f = kwargs["loc_f"]
         self.timeCreated = kwargs["timeOrderMade"]
-        self.status = "In Progress"
+        self.status = status.QUEUED
 
     def getRoute(self, curLoc):
         print('my route')
@@ -21,15 +24,13 @@ class Dispatch(object):
         print('my eta')
         # do stuff to get ETA, will probably need DateTime.now stuff
 
-    def dispatchFulfilled(self):
-        self.status = "Completed"
-
     def _asdict(self):
         return self.__dict__
 
     def __repr__(self):
         return f'Dispatch(' \
-               f'{self.sType}, {self.vid}, {self.cid}, {self.oid}, {self.loc_0}, {self.loc_f}, {self.timeCreated}'
+               f'{self.sType}, {self.vid}, {self.cid}, {self.oid}, ' \
+               f'{self.loc_0}, {self.loc_f}, {self.timeCreated}'
 
     def __str__(self):
         return f'''Service Type: {self.sType}
