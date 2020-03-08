@@ -217,6 +217,16 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 sqlConnection.commit()
                 responseDict['Success'] = True
 
+        elif '/addVehicle' in path:
+            dictionary = self.getPOSTBody()
+
+            print(dictionary)
+
+            fleetToAddTo = dictionary.pop('fleetNum')
+
+            print(dictionary)
+
+
         else:
             status = 404
 
