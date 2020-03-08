@@ -4,6 +4,7 @@ import sys
 
 sys.path.insert(1, '../')
 from dispatch import Dispatch
+from ENUMS.servicetype import type
 
 class TestDispatch(unittest.TestCase):
 
@@ -19,7 +20,7 @@ class TestDispatch(unittest.TestCase):
         return {
             'orderID': 1234,
             'customerID': 42131,
-            'serviceType': 'DryCleaning',
+            'serviceType': type.DRYCLEANING,
             'destination': "St. Edward's University",
             'timeOrderMade': '12:23:43',
         }
@@ -54,7 +55,13 @@ class TestDispatch(unittest.TestCase):
         dispatch = Dispatch(**dispatchDict)
 
         print(dispatch)
-        print(type(dispatch.status))
+        # print(type(dispatch.status))
+        print (
+            dispatch.vid, dispatch.cid, dispatch.oid,
+            dispatch.loc_0[1], dispatch.loc_0[0],
+            dispatch.loc_f[1], dispatch.loc_f[0],
+            dispatch.timeCreated, dispatch.status, dispatch.sType
+           )
 
 if __name__ == '__main__':
     unittest.main()

@@ -4,6 +4,7 @@ import json
 import mysql.connector as sqldb
 import requests
 from dispatch import Dispatch
+from ENUMS.serviceType import type
 # from serverutils import connectToSQLDB
 import datetime
 import copy
@@ -31,7 +32,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         order = {
             'orderID': 1234,
             'customerID': 42131,
-            'type': 'DryCleaning',
+            'serviceType': type.DRYCLEANING,
             'destination': "St. Edward's University",
             'timeOrderMade': '12:23:43',
         }
@@ -137,13 +138,13 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             dispatchCursor = sqlConnection.cursor()
             dispatchCursor.execute('INSERT INTO dispatch '
                                    '(vid, customerid, orderid, start_lat, start_lon, '
-                                   'end_lat, end_lon, start_time, status) VALUES '
-                                   '(%s %s %s %s %s %s %s %s %s)',
+                                   'end_lat, end_lon, start_time, status, type) VALUES '
+                                   '(%s %s %s %s %s %s %s %s %s %s)',
                                    (
                                     dispatch.vid, dispatch.cid, dispatch.oid,
-                                    dispatch.loc_0['lat'], dispatch.loc_0['lon'],
-                                    dispatch.loc_f['lat'], dispatch.loc_f['lon'],
-                                    dispatch.timeCreated, dispatch.status
+                                    dispatch.loc_0[1], dispatch.loc_0[0],
+                                    dispatch.loc_f[1], dispatch.loc_f[0],
+                                    dispatch.timeCreated, dispatch.status, dispatch.sType
                                    )
                                   )
             sqlConnection.commit()
