@@ -5,6 +5,7 @@ import mysql.connector as sqldb
 import requests
 from dispatch import Dispatch
 from ENUMS.servicetype import type
+from SERVER_UTILS.vehicle_utils import getRoute, getEta
 # from serverutils import connectToSQLDB
 from datetime import datetime
 import time
@@ -136,7 +137,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
             print(dispatch)
 
-
             print('Time: ', dispatch.timeCreated)
             # print(type(dispatch.timeCreated))
 
@@ -152,6 +152,14 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 #            dispatchCursor = sqlConnection.cursor()
 #            dispatchCursor.execute(insert)
 #            sqlConnection.commit()
+
+            eta = getEta()
+            print(eta)
+
+            vehicleDict['ETAInfo'] = {
+                "Units": "HH:MM:SS",
+                "ETA": eta
+            }
             responseDict['vehicle'] = vehicleDict
             status = 200
 
