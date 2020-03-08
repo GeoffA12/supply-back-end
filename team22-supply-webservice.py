@@ -4,7 +4,7 @@ import json
 import mysql.connector as sqldb
 import requests
 from dispatch import Dispatch
-from ENUMS.serviceType import type
+from ENUMS.servicetype import type
 # from serverutils import connectToSQLDB
 import datetime
 import copy
