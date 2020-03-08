@@ -32,7 +32,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         order = {
             'orderID': 1234,
             'customerID': 42131,
-            'type': type.DRYCLEANING,
+            'serviceType': type.DRYCLEANING,
             'destination': "St. Edward's University",
             'timeOrderMade': '12:23:43',
         }
@@ -142,8 +142,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                                    '(%s %s %s %s %s %s %s %s %s %s)',
                                    (
                                     dispatch.vid, dispatch.cid, dispatch.oid,
-                                    dispatch.loc_0['lat'], dispatch.loc_0['lon'],
-                                    dispatch.loc_f['lat'], dispatch.loc_f['lon'],
+                                    dispatch.loc_0[1], dispatch.loc_0[0],
+                                    dispatch.loc_f[1], dispatch.loc_f[0],
                                     dispatch.timeCreated, dispatch.status, dispatch.sType
                                    )
                                   )
