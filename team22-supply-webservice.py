@@ -6,7 +6,8 @@ import requests
 from dispatch import Dispatch
 from ENUMS.servicetype import type
 # from serverutils import connectToSQLDB
-import datetime
+from datetime import datetime
+import time
 import copy
 
 def connectToSQLDB():
@@ -32,7 +33,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         order = {
             'orderID': 1234,
             'customerID': 42131,
-            'serviceType': type.DRYCLEANING,
+            'serviceType': type.DRYCLEANING.value,
             'destination': "St. Edward's University",
             'timeOrderMade': '12:23:43',
         }
@@ -135,19 +136,22 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
             print(dispatch)
 
-            dispatchCursor = sqlConnection.cursor()
-            dispatchCursor.execute('INSERT INTO dispatch '
-                                   '(vid, customerid, orderid, start_lat, start_lon, '
-                                   'end_lat, end_lon, start_time, status, type) VALUES '
-                                   '(%s %s %s %s %s %s %s %s %s %s)',
-                                   (
-                                    dispatch.vid, dispatch.cid, dispatch.oid,
-                                    dispatch.loc_0[1], dispatch.loc_0[0],
-                                    dispatch.loc_f[1], dispatch.loc_f[0],
-                                    dispatch.timeCreated, dispatch.status, dispatch.sType
-                                   )
-                                  )
-            sqlConnection.commit()
+
+            print('Time: ', dispatch.timeCreated)
+            # print(type(dispatch.timeCreated))
+
+            timestamp = datetime.now().strftime('%H:%M:%S')
+
+            print(dispatch.vid)
+
+            insert = 'INSERT INTO dispatch (vid, custid, orderid, start_lat, start_lon, end_lat, end_lon, start_time, status, type) VALUES (%s %s %s %s %s %s %s %s %s %s)'% \
+            (dispatch.vid, dispatch.cid, dispatch.oid, dispatch.loc_0[1], dispatch.loc_0[0], dispatch.loc_f[1], dispatch.loc_f[0], timestamp, dispatch.status, dispatch.sType)
+
+            print(insert)
+
+#            dispatchCursor = sqlConnection.cursor()
+#            dispatchCursor.execute(insert)
+#            sqlConnection.commit()
             responseDict['vehicle'] = vehicleDict
             status = 200
 

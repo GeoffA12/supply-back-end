@@ -1,3 +1,4 @@
+import time
 from datetime import datetime
 import sys
 
@@ -13,8 +14,8 @@ class Dispatch(object):
         self.oid = kwargs["orderID"]
         self.loc_0 = kwargs["loc_0"]
         self.loc_f = kwargs["loc_f"]
-        self.timeCreated = kwargs["timeOrderMade"]
-        self.status = status.QUEUED
+        self.timeCreated = datetime.strptime(kwargs["timeOrderMade"], '%H:%M:%S').time()
+        self.status = status.QUEUED.value
 
     def getRoute(self, curLoc):
         print('my route')
