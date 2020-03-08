@@ -153,14 +153,12 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 #            dispatchCursor.execute(insert)
 #            sqlConnection.commit()
 
-            eta = getEta()
+            eta = getEta()[1]
             print(eta)
 
-            vehicleDict['ETAInfo'] = {
-                "Units": "HH:MM:SS",
-                "ETA": eta
-            }
-            responseDict['vehicle'] = vehicleDict
+            vehicleDict['ETA'] = eta
+
+            responseDict = vehicleDict
             status = 200
 
         elif '/loginHandler' in path:
