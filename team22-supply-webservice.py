@@ -10,6 +10,7 @@ from SERVER_UTILS.vehicle_utils import getRoute, getEta
 from datetime import datetime
 import time
 import copy
+import random
 
 def connectToSQLDB():
     return sqldb.connect(user='root', password='password', database='team22supply', port=6022)
@@ -25,14 +26,14 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
     def getVehicles(self):
         vehicles = (
             (12345, 'Inactive', 'qw3256', 34, 'Toyota', 'V-9', 23.42, 42.12),
-            (13579, 'Active', 'gf9012', 34, 'Mercedes', 'V-9', 102.43, 231.12),
+            (13579, 'Active', 'gf9012', 34, 'Mercedes', 'V-9', 102.43, 22.22),
             (12345, 'Active', 'qw3256', 34, 'Toyota', 'V-10', 12.51, 87.51),
             (12345, 'Maintenance', 'qw3256', 34, 'Toyota', 'V-8', 23.42, 124.31)
         )
         return vehicles
     def getOrder(self):
         order = {
-            'orderID': 1234,
+            'orderID': random.random(),
             'customerID': 42131,
             'serviceType': type.DRYCLEANING.value,
             'destination': "St. Edward's University",
@@ -140,18 +141,24 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             print('Time: ', dispatch.timeCreated)
             # print(type(dispatch.timeCreated))
 
-            timestamp = datetime.now().strftime('%H:%M:%S')
+            timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
             print(dispatch.vid)
 
-            insert = 'INSERT INTO dispatch (vid, custid, orderid, start_lat, start_lon, end_lat, end_lon, start_time, status, type) VALUES (%s %s %s %s %s %s %s %s %s %s)'% \
-            (dispatch.vid, dispatch.cid, dispatch.oid, dispatch.loc_0[1], dispatch.loc_0[0], dispatch.loc_f[1], dispatch.loc_f[0], timestamp, dispatch.status, dispatch.sType)
+            statement = ('''INSERT INTO dispatch
+                        (vid, custid, orderid, start_lat, start_lon, end_lat, end_lon, start_time, status, type)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)''')
+            data = (dispatch.vid, dispatch.cid, dispatch.oid, 
+                    dispatch.loc_0[1], dispatch.loc_0[0], dispatch.loc_f[1], dispatch.loc_f[0], 
+                    timestamp, dispatch.status, dispatch.sType
+                   )
 
-            print(insert)
+            print(statement)
+            print(data)
 
-#            dispatchCursor = sqlConnection.cursor()
-#            dispatchCursor.execute(insert)
-#            sqlConnection.commit()
+            dispatchCursor = sqlConnection.cursor()
+            dispatchCursor.execute(statement, data)
+            sqlConnection.commit()
 
             eta = getEta()[1]
             print(eta)
@@ -224,6 +231,34 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
             print(dictionary)
 
+            vehicleEntries = []
+
+            for key, value in dictionary.items():
+                print(key)
+                vTuple = (1, value['Liscence Plate'], int(fleetToAddTo), value['Make'], value['Model'], 12.12, 34.34)
+                print(vTuple)
+                vehicleEntries.append(vTuple)
+            print(vehicleEntries)
+            print(vTuple)
+
+            #insert_stm = (
+            #    "INSERT INTO vehicles (status, licenseplate, fleetid, make, model, current_lat, current_lon) "
+            #    "VALUES (%s %s %s %s %s %s %s)"
+            #)
+            statement = ("""INSERT INTO vehicles
+                            (status, licenseplate, fleetid, make, model, current_lat, current_lon)
+                            VALUES (%s, %s, %s, %s, %s, %s, %s)""")
+
+            sqlConnection = connectToSQLDB()
+            addCursor = sqlConnection.cursor()
+            addCursor.execute(statement, vTuple)
+
+            sqlConnection.commit()
+            addCursor.close()
+            sqlConnection.close()
+
+            status = 200
+            responseDict = dictionary
 
         else:
             status = 404
