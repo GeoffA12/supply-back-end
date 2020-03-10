@@ -1,4 +1,8 @@
+import sys
+
+sys.path.insert(1, '../')
 from dispatch import Dispatch
+
 import copy
 def main():
     vehicles = (

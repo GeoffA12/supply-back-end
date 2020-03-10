@@ -4,9 +4,13 @@ import json
 import mysql.connector as sqldb
 import requests
 from dispatch import Dispatch
+from ENUMS.servicetype import type
+from SERVER_UTILS.vehicle_utils import getRoute, getEta
 # from serverutils import connectToSQLDB
-import datetime
+from datetime import datetime
+import time
 import copy
+import random
 
 def connectToSQLDB():
     return sqldb.connect(user='root', password='password', database='team22supply', port=6022)
@@ -22,16 +26,16 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
     def getVehicles(self):
         vehicles = (
             (12345, 'Inactive', 'qw3256', 34, 'Toyota', 'V-9', 23.42, 42.12),
-            (13579, 'Active', 'gf9012', 34, 'Mercedes', 'V-9', 102.43, 231.12),
+            (13579, 'Active', 'gf9012', 34, 'Mercedes', 'V-9', 102.43, 22.22),
             (12345, 'Active', 'qw3256', 34, 'Toyota', 'V-10', 12.51, 87.51),
             (12345, 'Maintenance', 'qw3256', 34, 'Toyota', 'V-8', 23.42, 124.31)
         )
         return vehicles
     def getOrder(self):
         order = {
-            'orderID': 1234,
+            'orderID': random.random(),
             'customerID': 42131,
-            'type': 'DryCleaning',
+            'serviceType': type.DRYCLEANING.value,
             'destination': "St. Edward's University",
             'timeOrderMade': '12:23:43',
         }
@@ -134,20 +138,34 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
             print(dispatch)
 
+            print('Time: ', dispatch.timeCreated)
+            # print(type(dispatch.timeCreated))
+
+            timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+            print(dispatch.vid)
+
+            statement = ('''INSERT INTO dispatch
+                        (vid, custid, orderid, start_lat, start_lon, end_lat, end_lon, start_time, status, type)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)''')
+            data = (dispatch.vid, dispatch.cid, dispatch.oid, 
+                    dispatch.loc_0[1], dispatch.loc_0[0], dispatch.loc_f[1], dispatch.loc_f[0], 
+                    timestamp, dispatch.status, dispatch.sType
+                   )
+
+            print(statement)
+            print(data)
+
             dispatchCursor = sqlConnection.cursor()
-            dispatchCursor.execute('INSERT INTO dispatch '
-                                   '(vid, customerid, orderid, start_lat, start_lon, '
-                                   'end_lat, end_lon, start_time, status) VALUES '
-                                   '(%s %s %s %s %s %s %s %s %s)',
-                                   (
-                                    dispatch.vid, dispatch.cid, dispatch.oid,
-                                    dispatch.loc_0['lat'], dispatch.loc_0['lon'],
-                                    dispatch.loc_f['lat'], dispatch.loc_f['lon'],
-                                    dispatch.timeCreated, dispatch.status
-                                   )
-                                  )
+            dispatchCursor.execute(statement, data)
             sqlConnection.commit()
-            responseDict['vehicle'] = vehicleDict
+
+            eta = getEta()[1]
+            print(eta)
+
+            vehicleDict['ETA'] = eta
+
+            responseDict = vehicleDict
             status = 200
 
         elif '/loginHandler' in path:
@@ -203,6 +221,44 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                                   (username, password, email, phone))
                 sqlConnection.commit()
                 responseDict['Success'] = True
+
+        elif '/addVehicle' in path:
+            dictionary = self.getPOSTBody()
+
+            print(dictionary)
+
+            fleetToAddTo = dictionary.pop('fleetNum')
+
+            print(dictionary)
+
+            vehicleEntries = []
+
+            for key, value in dictionary.items():
+                print(key)
+                vTuple = (1, value['Liscence Plate'], int(fleetToAddTo), value['Make'], value['Model'], 12.12, 34.34)
+                print(vTuple)
+                vehicleEntries.append(vTuple)
+            print(vehicleEntries)
+            print(vTuple)
+
+            #insert_stm = (
+            #    "INSERT INTO vehicles (status, licenseplate, fleetid, make, model, current_lat, current_lon) "
+            #    "VALUES (%s %s %s %s %s %s %s)"
+            #)
+            statement = ("""INSERT INTO vehicles
+                            (status, licenseplate, fleetid, make, model, current_lat, current_lon)
+                            VALUES (%s, %s, %s, %s, %s, %s, %s)""")
+
+            sqlConnection = connectToSQLDB()
+            addCursor = sqlConnection.cursor()
+            addCursor.execute(statement, vTuple)
+
+            sqlConnection.commit()
+            addCursor.close()
+            sqlConnection.close()
+
+            status = 200
+            responseDict = dictionary
 
         else:
             status = 404
