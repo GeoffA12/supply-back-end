@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class type(Enum):
+class ServiceType(Enum):
     ver = '0.1'
     
     DRYCLEANING = 'drycleaning'

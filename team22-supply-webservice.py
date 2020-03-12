@@ -4,7 +4,9 @@ import json
 import mysql.connector as sqldb
 import requests
 from dispatch import Dispatch
-from ENUMS.servicetype import type
+from ENUMS.servicetype import ServiceType
+from ENUMS.vehiclestatus import VechileStatus
+from ENUMS.dispatchstatus import DispatchStatus
 from SERVER_UTILS.vehicle_utils import getRoute, getEta
 # from serverutils import connectToSQLDB
 from datetime import datetime
@@ -20,11 +22,6 @@ def connectToSQLDB():
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
     ver = '0.3.1'
     
-    def getPOSTBody(self):
-        length = int(self.headers['content-length'])
-        body = self.rfile.read(length)
-        return json.loads(body)
-    
     def getVehicles(self):
         vehicles = (
             (12345, 'Inactive', 'qw3256', 34, 'Toyota', 'V-9', 23.42, 42.12),
@@ -38,7 +35,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         order = {
             'orderID': random.random(),
             'customerID': 42131,
-            'serviceType': type.DRYCLEANING.value,
+            'serviceType': ServiceType.DRYCLEANING.value,
             'destination': "St. Edward's University",
             'timeOrderMade': '12:23:43',
             }

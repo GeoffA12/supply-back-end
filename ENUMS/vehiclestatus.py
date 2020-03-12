@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class status(Enum):
+class VehicleStatus(Enum):
     ver = '0.1'
     
     ACTIVE = 'active'
