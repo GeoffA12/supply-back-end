@@ -2,21 +2,21 @@ import time
 from datetime import datetime
 import sys
 
-from ENUMS.dispatchstatus import status
+from ENUMS.dispatchstatus import DispatchStatus
 
 
 class Dispatch(object):
-    ver = '0.4'
+    ver = '0.5'
     
-    def __init__(self, **kwargs):
-        self.sType = kwargs["serviceType"]
-        self.vid = kwargs["vid"]
-        self.cid = kwargs["customerID"]
-        self.oid = kwargs["orderID"]
-        self.loc_0 = kwargs["loc_0"]
-        self.loc_f = kwargs["loc_f"]
-        self.timeCreated = datetime.strptime(kwargs["timeOrderMade"], '%H:%M:%S').time()
-        self.status = status.QUEUED.value
+    def __init__(self, serviceType, vid, customerID, orderID, loc_0, loc_f, timeOrderMade):
+        self.sType = serviceType
+        self.vid = vid
+        self.cid = customerID
+        self.oid = orderID
+        self.loc_0 = loc_0
+        self.loc_f = loc_f
+        self.timeCreated = datetime.strptime(timeOrderMade, '%H:%M:%S').time()
+        self.status = DispatchStatus.QUEUED
     
     def getRoute(self, curLoc):
         print('my route')

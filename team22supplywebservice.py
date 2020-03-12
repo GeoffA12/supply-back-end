@@ -69,9 +69,9 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             '''
             # Query all vehicles whose status is 'Active'
             vehicleCursor.execute('SELECT * FROM vehicles, fleets
-                                WHERE status = Active
-                                and type = drycleaning
-                                and vehicles.fleetid and fleets.fleetid')
+                                WHERE status = 1
+                                and type = 1
+                                and vehicles.fleetid = fleets.fleetid')
             vehicleEntries = vehicleCursor.fetchAll();
             '''
     
@@ -113,13 +113,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             dispatchDict = copy.deepcopy(order)
             dispatchDict['vid'] = vid
     
-            ''' I think :C
-            SELECT * from Vehicle, Fleet WHERE
-            status = Available
-            and serviceType = some serviceType
-            and Vehicle.fleetId = Fleet.fleetId
-            '''
-    
             # Turn a destination dictionary into a tupled pair
             attrToTuple = dispatchDict.pop('destination')
             print(attrToTuple)
@@ -152,7 +145,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'''
             data = (dispatch.vid, dispatch.cid, dispatch.oid,
                     dispatch.loc_0[1], dispatch.loc_0[0], dispatch.loc_f[1], dispatch.loc_f[0],
-                    timestamp, dispatch.status, dispatch.sType
+                    timestamp, dispatch.status.value, dispatch.sType
                     )
             sqlConnection = connectToSQLDB()
             with sqlConnection.cursor() as cursor:
@@ -183,9 +176,9 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             print(vehicleEntries)
             print(data)
 
-            statement = ("""INSERT INTO vehicles
+            statement = '''INSERT INTO vehicles
                             (status, licenseplate, fleetid, make, model, current_lat, current_lon)
-                            VALUES (%s, %s, %s, %s, %s, %s, %s)""")
+                            VALUES (%s, %s, %s, %s, %s, %s, %s)'''
             sqlConnection = connectToSQLDB()
             with sqlConnection.cursor() as cursor:
                 cursor.execute(statement, data)
