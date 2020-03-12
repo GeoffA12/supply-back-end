@@ -1,8 +1,6 @@
-import time
 from datetime import datetime
-import sys
 
-from ENUMS.dispatchstatus import DispatchStatus
+from enums.dispatchstatus import DispatchStatus
 
 
 class Dispatch(object):
@@ -25,8 +23,8 @@ class Dispatch(object):
     def getETA(self, curLoc):
         print('my eta')
         # do stuff to get ETA, will probably need DateTime.now stuff
-    
-    def _asdict(self):
+
+    def asdict(self):
         return self.__dict__
     
     def __repr__(self):
