@@ -1,7 +1,7 @@
 import sys
 
 sys.path.insert(1, '../')
-from SERVER_UTILS.vehicle_utils import getRoute, getEta
+from utils.vehicleutils import getRoute, getEta
 
 
 def main():
