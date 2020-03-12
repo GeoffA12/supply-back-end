@@ -6,9 +6,10 @@ import json
 def getRoute():
     # Make request for mapbox driving data given two coordinates
     mapbox_driving_req = requests.get(
-        'https://api.mapbox.com/directions/v5/mapbox/driving/-97.724208,30.306963;-97.760131,'
-        '30.328231?geometries=geojson&access_token=pk.eyJ1IjoiY3N5Y2hldiIsImEiOiJjazZsbmg4c2gwYXU3M21zOG55aTljcTBuIn0'
-        '.G5UXjF-3_0mXKo6huFgLwg')
+            'https://api.mapbox.com/directions/v5/mapbox/driving/-97.724208,30.306963;-97.760131,'
+            '30.328231?geometries=geojson&access_token=pk'
+            '.eyJ1IjoiY3N5Y2hldiIsImEiOiJjazZsbmg4c2gwYXU3M21zOG55aTljcTBuIn0'
+            '.G5UXjF-3_0mXKo6huFgLwg')
     # encode data
     data = mapbox_driving_req.json()
     # json dump coordinates data
@@ -20,9 +21,10 @@ def getRoute():
 def getEta():
     # Make request for mapbox driving data given two coordinates
     mapbox_driving_req = requests.get(
-        'https://api.mapbox.com/directions/v5/mapbox/driving/-97.724208,30.306963;-97.760131,'
-        '30.328231?geometries=geojson&access_token=pk.eyJ1IjoiY3N5Y2hldiIsImEiOiJjazZsbmg4c2gwYXU3M21zOG55aTljcTBuIn0'
-        '.G5UXjF-3_0mXKo6huFgLwg')
+            'https://api.mapbox.com/directions/v5/mapbox/driving/-97.724208,30.306963;-97.760131,'
+            '30.328231?geometries=geojson&access_token=pk'
+            '.eyJ1IjoiY3N5Y2hldiIsImEiOiJjazZsbmg4c2gwYXU3M21zOG55aTljcTBuIn0'
+            '.G5UXjF-3_0mXKo6huFgLwg')
     # encode data
     data = mapbox_driving_req.json()
     # json dump distance traveled along route data and cast it as a float
