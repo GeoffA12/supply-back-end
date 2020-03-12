@@ -18,7 +18,7 @@ def connectToSQLDB():
 
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
-    ver = '0.2'
+    ver = '0.3.1'
     
     def getPOSTBody(self):
         length = int(self.headers['content-length'])
