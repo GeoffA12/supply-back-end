@@ -128,20 +128,19 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             fleetToAddTo = dictionary.pop('fleetNum')
             print(dictionary)
 
-            vehicleEntries = []
+            data = []
             for key, value in dictionary.items():
                 print(key)
-                data = (1, value['Liscence Plate'], int(fleetToAddTo), value['Make'], value['Model'], 12.12, 34.34)
-                print(data)
-                vehicleEntries.append(data)
-            print(vehicleEntries)
+                entry = (1, value['LicensePlate'], int(fleetToAddTo), value['Make'], value['Model'], 12.12, 34.34)
+                print(entry)
+                data.append(entry)
             print(data)
 
             statement = '''INSERT INTO vehicles
                             (status, licenseplate, fleetid, make, model, current_lat, current_lon)
                             VALUES (%s, %s, %s, %s, %s, %s, %s)'''
             with sqlConnection.cursor() as cursor:
-                cursor.execute(statement, data)
+                cursor.executemany(statement, data)
                 sqlConnection.commit()
 
             status = 200
