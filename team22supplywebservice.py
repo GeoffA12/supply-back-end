@@ -196,14 +196,14 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         status = 200
         responseDict = {}
         if '/vehicleRequest' in path:
-            vid = ""
-            statement = 'SELECT * FROM vehicles'
-            if len(params) != 0:
-                vid = int(params.split('=')[1])
-                statement += ' WHERE vid = %s'
-            with sqlConnection.cursor() as cursor:
-                cursor.execute(statement, vid)
-                responseDict = cursor.fetchall()
+            # vid = ""
+            # statement = 'SELECT * FROM vehicles'
+            # if len(params) != 0:
+            #     vid = int(params.split('=')[1])
+            #     statement += ' WHERE vid = %s'
+            # with sqlConnection.cursor() as cursor:
+            #     cursor.execute(statement, vid)
+            #     responseDict = cursor.fetchall()
 
             status = 200
 

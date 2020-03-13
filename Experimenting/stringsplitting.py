@@ -1,12 +1,12 @@
-# str = "https://supply.team22.softwareengineeringii.com/getDispatch/?vid=123&status=queued&status=queued&status=queued"
-str = "https://supply.team22.softwareengineeringii.com/getDispatch/?vid=123"
+str = "https://supply.team22.softwareengineeringii.com/getDispatch/?vid=123&status=queued&status=queued&status=queued"
+# str = "https://supply.team22.softwareengineeringii.com/getDispatch/?vid=123"
 
 str = str.split('/')[-1].strip('?')
 print(str)
-vid = str.split('=')[1]
-print(vid)
+# vid = str.split('=')[1]
+# print(vid)
 
-assert(vid == '123')
+# assert(vid == '123')
 
 arr = str.split('&')
 print(arr)
