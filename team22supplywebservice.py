@@ -50,7 +50,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                         vehicles.fleetid = fleets.fleetid'''
             with sqlConnection.cursor as cursor:
                 cursor.execute(statement, data)
-                vehicleEntries = cursor.fetchAll();
+                vehicleEntries = cursor.fetchall();
         
             print(vehicleEntries)
             vehicle = vehicleEntries[0]
@@ -143,19 +143,17 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 sqlConnection.commit()
 
             status = 200
-            responseDict['Success'] = True
 
         elif '/removeVehicle' in path:
             print(dictionary)
     
             statement = 'DELETE FROM vehicles (vid) WHERE vid = %s'
-            data = tuple((x,) for x in dictionary['deleteMe'])
+            data = ((x,) for x in dictionary['deleteMe'])
             with sqlConnection.cursor() as cursor:
                 cursor.executemany(statement, data)
                 sqlConnection.commit()
     
             status = 200
-            responseDict['Success'] = True
 
         elif '/addFleet' in path:
             print(dictionary)
@@ -177,10 +175,9 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             with sqlConnection.cursor() as cursor:
                 cursor.execute(statement, data)
                 sqlConnection.commit()
-    
+
             status = 200
-            responseDict['Success'] = True
-    
+
         else:
             status = 404
     
@@ -194,17 +191,57 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         vehicleList = self.getVehicles()
         path = self.path
+        params = path.split('/')[-1].strip('?')
+        sqlConnection = connectToSQLDB()
         status = 200
         responseDict = {}
         if '/vehicleRequest' in path:
-            responseDict = vehicleList
-        
+            vid = ""
+            statement = 'SELECT * FROM vehicles'
+            if len(params) != 0:
+                vid = int(params.split('=')[1])
+                statement += ' WHERE vid = %s'
+            with sqlConnection.cursor() as cursor:
+                cursor.execute(statement, vid)
+                responseDict = cursor.fetchall()
+
+            status = 200
+
         elif '/etaRequest' in path:
-            print()
-        
-        elif True:
-            print()
-        
+            oid = int(params.split('=')[1])
+            statement = 'SELECT * FROM dispatch WHERE oid = %s'
+            with sqlConnection.cursor() as cursor:
+                cursor.execute(statement, oid)
+                responseDict = cursor.fetchall()
+
+            status = 200
+
+        elif '/getDispatch' in path:
+            vid = int(params.split('=')[1])
+            statement = 'SELECT * FROM dispatch WHERE vid = %s'
+            dispatchTup = ()
+            with sqlConnection.cursor() as cursor:
+                cursor.execute(statement, vid)
+                dispatchTup = cursor.fetchall()
+
+            dispatchID = [list(x)[0] for x in dispatchTup]
+            renderedCols = [list(x)[2:4] + list(x)[6:10] for x in dispatchTup]
+
+            status = 200
+            responseDict = dict(zip(dispatchID, renderedCols))
+            # for key, value in zip(dispatchID, renderedCols):
+            #     responseDict[f'dispatch{key}'] = {
+            #         'orderID': value[1],
+            #         'custID': value[0],
+            #         'dest': (value[2], value[3]),
+            #         'timeOrderPlaced': value[4],
+            #         'status': value[5]
+            #     }
+
+        else:
+            status = 404
+
+        sqlConnection.close()
         self.send_response(status)
         self.end_headers()
         res = json.dumps(responseDict)
