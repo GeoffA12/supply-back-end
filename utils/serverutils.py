@@ -14,7 +14,6 @@ ver = '0.2'
 def connectToSQLDB():
     return sqldb.connect(user = 'root', password = 'password', database = 'team22demand', port = 6022)
 
-
 def getPOSTBody():
     length = int(BaseHTTPRequestHandler.headers['content-length'])
     body = BaseHTTPRequestHandler.rfile.read(length)

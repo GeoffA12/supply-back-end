@@ -44,12 +44,12 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             # Query all vehicles whose status is 'Active' and are a part of the fleet whose service time is the
             # incoming order's service type
             vehicleEntries = ()
+            data = (dictionary['serviceType'],)
             statement = '''SELECT * FROM vehicles, fleets
                         WHERE status = 1 and type = %s and
                         vehicles.fleetid = fleets.fleetid'''
-            data = (dictionary['serviceType'],)
             with sqlConnection.cursor as cursor:
-                cursor.execute(statement)
+                cursor.execute(statement, data)
                 vehicleEntries = cursor.fetchAll();
         
             print(vehicleEntries)
@@ -92,29 +92,29 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             dispatchDict['loc_f'] = dispatchDict['destination']
             dispatchDict['loc_0'] = (vLat, vLon)
             print(dispatchDict)
-        
+
             dispatch = Dispatch(**dispatchDict)
             print(dispatch)
-        
+
             print('Time: ', dispatch.timeCreated)
             # print(type(dispatch.timeCreated))
-        
+
             timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        
+
             print(dispatch.vid)
-        
-            statement = '''INSERT INTO dispatch
-                            (vid, custid, orderid, start_lat, start_lon, end_lat, end_lon, start_time, status, type)
-                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'''
+
             data = (
                 dispatch.vid, dispatch.cid, dispatch.oid,
                 dispatch.loc_0[1], dispatch.loc_0[0], dispatch.loc_f[1], dispatch.loc_f[0],
                 timestamp, dispatch.status.value, dispatch.sType.value
                 )
+            statement = '''INSERT INTO dispatch
+                        (vid, custid, orderid, start_lat, start_lon, end_lat, end_lon, start_time, status, type)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'''
             with sqlConnection.cursor() as cursor:
                 cursor.execute(statement, data)
                 sqlConnection.commit()
-        
+
             eta = getEta()[1]
             print(eta)
         
@@ -135,21 +135,51 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 print(entry)
                 data.append(entry)
             print(data)
-
             statement = '''INSERT INTO vehicles
-                            (status, licenseplate, fleetid, make, model, current_lat, current_lon)
-                            VALUES (%s, %s, %s, %s, %s, %s, %s)'''
+                        (status, licenseplate, fleetid, make, model, current_lat, current_lon)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s)'''
             with sqlConnection.cursor() as cursor:
                 cursor.executemany(statement, data)
                 sqlConnection.commit()
 
             status = 200
-            responseDict = dictionary
-    
+            responseDict['Success'] = True
+
         elif '/removeVehicle' in path:
             print(dictionary)
-            fleetToAddTo = dictionary.pop('fleetNum')
+    
+            statement = 'DELETE FROM vehicles (vid) WHERE vid = %s'
+            data = tuple((x,) for x in dictionary['deleteMe'])
+            with sqlConnection.cursor() as cursor:
+                cursor.executemany(statement, data)
+                sqlConnection.commit()
+    
+            status = 200
+            responseDict['Success'] = True
+
+        elif '/addFleet' in path:
             print(dictionary)
+            dictionary = {
+                'newFleet1': {
+                    'region': 'Austin',
+                    'serviceType': 'Dry Cleaning',
+                    'fmid': 123
+                    }
+                }
+            data = []
+            for key, value in dictionary.items():
+                print(key)
+                entry = (value['region'], value['serviceType'], value['fmid'])
+                print(entry)
+                data.append(entry)
+            print(data)
+            statement = 'INSERT INTO fleets (region, type, fmid) VALUES (%s, %s, %s)'
+            with sqlConnection.cursor() as cursor:
+                cursor.execute(statement, data)
+                sqlConnection.commit()
+    
+            status = 200
+            responseDict['Success'] = True
     
         else:
             status = 404
