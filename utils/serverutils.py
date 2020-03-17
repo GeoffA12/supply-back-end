@@ -12,7 +12,7 @@ ver = '0.2'
 
 
 def connectToSQLDB():
-    return sqldb.connect(user = 'root', password = 'password', database = 'team22demand', port = 6022)
+    return sqldb.connect(user = 'root', password = 'password', database = 'team22supply', port = 6022)
 
 def getPOSTBody():
     length = int(BaseHTTPRequestHandler.headers['content-length'])

@@ -5,7 +5,7 @@ import mysql.connector as sqldb
 import requests
 from dispatch import Dispatch
 from enums.servicetype import ServiceType
-from enums.vehiclestatus import VechileStatus
+#from enums.vehiclestatus import VechileStatus
 from enums.dispatchstatus import DispatchStatus
 from utils.vehicleutils import getRoute, getEta
 from utils.serverutils import connectToSQLDB
@@ -189,22 +189,44 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(bytesStr)
     
     def do_GET(self):
-        vehicleList = self.getVehicles()
+        # vehicleList = self.getVehicles()
         path = self.path
+        print(path)
         params = path.split('/')[-1].strip('?')
+        print(params)
         sqlConnection = connectToSQLDB()
         status = 200
         responseDict = {}
         if '/vehicleRequest' in path:
-            # vid = ""
+            data = ""
             # statement = 'SELECT * FROM vehicles'
             # if len(params) != 0:
-            #     vid = int(params.split('=')[1])
-            #     statement += ' WHERE vid = %s'
+            data = params.split('=')[1]
+            print(data)
+            # statement += ' WHERE vid = %s'
             # with sqlConnection.cursor() as cursor:
-            #     cursor.execute(statement, vid)
-            #     responseDict = cursor.fetchall()
-
+            statement = '''SELECT vehicles.fleetid, vid, make, model, current_lat, current_lon,
+                        status, licenseplate, last_heartbeat
+                        FROM vehicles, fleets, fleetmanagers
+                        WHERE vehicles.fleetid = fleets.fleetid AND
+                        fleetmanagers.username = %s
+                        '''
+            print(statement)
+            cursor = sqlConnection.cursor()
+            cursor.execute(statement, (data,))
+            rows = cursor.fetchall()
+            # print(vehicles)
+            vehicles = []
+            for row in rows:
+                print(row)
+                parsed = [row[0], row[1], f'{row[2]}: {row[3]}',
+                f'Lat: {float(row[4])} Lon: {float(row[5])}',
+                row[6], None, row[7], row[8]]
+                vehicles.append(parsed)
+            for i, entry in enumerate(vehicles, 1):
+                print(f'Entry {i}: {entry}')
+            responseDict = vehicles
+            # print(responseDict)
             status = 200
 
         elif '/etaRequest' in path:
