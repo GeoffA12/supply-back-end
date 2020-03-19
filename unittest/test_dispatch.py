@@ -23,8 +23,8 @@ class TestDispatch(unittest.TestCase):
     def getOrder(self):
         return {
             'serviceType': ServiceType.DRY_CLEANING,
-            'customerID': 1234567,
-            'orderID': 1234,
+            'custid': 1234567,
+            'orderid': 1234,
             'destination': {
                 'lat': 123,
                 'lon': 123
