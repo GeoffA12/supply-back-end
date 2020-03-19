@@ -14,7 +14,7 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(123, fleet.fleetid)
         self.assertEqual(12, fleet.fmid)
         self.assertEqual('Austin', fleet.region)
-        self.assertEqual(ServiceType.COFFEE, fleet.sType)
+        self.assertEqual(ServiceType.COFFEE, fleet.serviceType)
 
 
 if __name__ == '__main__':

@@ -7,25 +7,31 @@ from enums.servicetype import ServiceType
 
 class MyTestCase(unittest.TestCase):
     
+    def test_stringToEnum(self):
+        enum = ServiceType.translate('dry cleaning')
+        self.assertEqual(ServiceType.DRY_CLEANING, enum)
+        enum = ServiceType.translate('DRY CLEANING')
+        self.assertEqual(ServiceType.DRY_CLEANING, enum)
+    
     def test_drycleaning(self):
-        self.assertEqual('drycleaning', ServiceType.DRYCLEANING.value)
-        self.assertTrue(isinstance(ServiceType.DRYCLEANING, ServiceType))
-        print(ServiceType.DRYCLEANING.name)
+        enum = ServiceType.DRY_CLEANING
+        self.assertEqual('DRY_CLEANING', enum.name)
+        self.assertEqual(1, enum.value)
     
     def test_rx(self):
-        self.assertEqual('rx', ServiceType.RX.value)
-        self.assertTrue(isinstance(ServiceType.RX, ServiceType))
-        print(ServiceType.RX.name)
+        enum = ServiceType.RX
+        self.assertEqual('RX', enum.name)
+        self.assertEqual(2, enum.value)
     
     def test_coffee(self):
-        self.assertEqual('coffee', ServiceType.COFFEE.value)
-        self.assertTrue(isinstance(ServiceType.COFFEE, ServiceType))
-        print(ServiceType.COFFEE.name)
+        enum = ServiceType.COFFEE
+        self.assertEqual('COFFEE', enum.name)
+        self.assertEqual(3, enum.value)
     
     def test_events(self):
-        self.assertEqual('events', ServiceType.EVENTS.value)
-        self.assertTrue(isinstance(ServiceType.EVENTS, ServiceType))
-        print(ServiceType.EVENTS.name)
+        enum = ServiceType.EVENTS
+        self.assertEqual('EVENTS', enum.name)
+        self.assertEqual(4, enum.value)
 
 
 if __name__ == '__main__':
