@@ -5,17 +5,11 @@ import mysql.connector as sqldb
 import requests
 from dispatch import Dispatch
 from enums.servicetype import ServiceType
-#from enums.vehiclestatus import VechileStatus
+from enums.vehiclestatus import VehicleStatus
 from enums.dispatchstatus import DispatchStatus
 from utils.vehicleutils import getRoute, getEta
 from utils.serverutils import connectToSQLDB
-from datetime import datetime
-import time
 from copy import deepcopy
-import random
-
-
-# TODO: ISOto and ISOfrom for transferring datetype in json between backends
 
 
 # def connectToSQLDB():
@@ -23,7 +17,7 @@ import random
 
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
-    ver = '0.3.1'
+    ver = '0.4.0'
     
     # How to convert the body from a string to a dictionary
     # use 'loads' to convert from byte/string to a dictionary!
@@ -32,42 +26,65 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         body = self.rfile.read(length)
         return json.loads(body)
     
+    '''
+    data I want or am expecting
+    dictionary = {
+            'serviceType': ServiceType.DRY_CLEANING,
+            'customerID': 1234567,
+            'orderID': 1234,
+            'destination': {
+                'lat': 123,
+                'lon': 123
+                },
+            'timeOrderMade': datetime(2011, 11, 4, 0, 5, 23)
+            }
+    '''
+    
     def do_POST(self):
         path = self.path
         print(path)
         responseDict = {}
         dictionary = self.getPOSTBody()
         sqlConnection = connectToSQLDB()
-    
+        
         if '/vehicleRequest' in path:
             print(dictionary)
             # Query all vehicles whose status is 'Active' and are a part of the fleet whose service time is the
             # incoming order's service type
-            vehicleEntries = ()
-            data = (dictionary['serviceType'],)
-            statement = '''SELECT * FROM vehicles, fleets
-                        WHERE status = 1 and type = %s and
-                        vehicles.fleetid = fleets.fleetid'''
-            with sqlConnection.cursor as cursor:
-                cursor.execute(statement, data)
-                vehicleEntries = cursor.fetchall();
-        
+            data = [1, dictionary['serviceType'], ]
+            statement = '''SELECT vid, licenseplate,
+                        make, model, current_lat, current_lon
+                        FROM vehicles, fleets
+                        WHERE vehicles.status = %s AND type = %s
+                        AND vehicles.fleetid = fleets.fleetid'''
+            cursor = sqlConnection.cursor()
+            cursor.execute(statement, tuple(data))
+            vehicleEntries = cursor.fetchall()
+            if vehicleEntries is None:
+                data[0] = 2
+                cursor = sqlConnection.cursor()
+                cursor.execute(statement, tuple(data))
+                vehicleEntries = cursor.fetchall()
+            
+            cursor.close()
             print(vehicleEntries)
+            allPostions = [(x[4], x[5]) for x in vehicleEntries]
+            
             vehicle = vehicleEntries[0]
-        
+            
             # Capture vehicle tuple into its separate variables
-            vid, status, licensePlate, fleetId, make, model, vLat, vLon = vehicle
+            vid, licensePlate, make, model, vLat, vLon = vehicle
+            
             # Seeing if the unpacking worked d:
             print(vehicle)
+            
             print(vid)
-            print(status)
             print(licensePlate)
-            print(fleetId)
             print(make)
             print(model)
             print(vLon)
             print(vLat)
-        
+            
             vehicleDict = {
                 'vid': vid,
                 'licensePlate': licensePlate,
@@ -78,48 +95,42 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     'lon': vLon
                     },
                 }
-        
+            
             print(vehicleDict)
-            # Deep copy the dictionary because we'll need to mutate what's in here a bit. Also separates this from
-            # the already existing containers floating around
             dispatchDict = deepcopy(dictionary)
             dispatchDict['vid'] = vid
-        
+            
             # Turn a destination dictionary into a tupled pair
-            dispatchDict['destination'] = (dispatchDict['destination']['lat'], dispatchDict['destination']['lpm'])
-        
-            # Format for Dispatch class
-            dispatchDict['loc_f'] = dispatchDict['destination']
+            destination = dispatchDict.pop('destination')
+            
+            dispatchDict['loc_f'] = (destination['lat'], destination['lon'])
             dispatchDict['loc_0'] = (vLat, vLon)
+            
             print(dispatchDict)
-
+            
             dispatch = Dispatch(**dispatchDict)
+            
             print(dispatch)
-
-            print('Time: ', dispatch.timeCreated)
-            # print(type(dispatch.timeCreated))
-
-            timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
-            print(dispatch.vid)
-
+            
             data = (
-                dispatch.vid, dispatch.cid, dispatch.oid,
-                dispatch.loc_0[1], dispatch.loc_0[0], dispatch.loc_f[1], dispatch.loc_f[0],
-                timestamp, dispatch.status.value, dispatch.sType.value
+                dispatch.vid, dispatch.custid, dispatch.orderid,
+                dispatch.loc_0[0], dispatch.loc_0[1], dispatch.loc_f[0], dispatch.loc_f[1],
+                dispatch.timeCreated, dispatch.status.value, dispatch.serviceType.value
                 )
             statement = '''INSERT INTO dispatch
-                        (vid, custid, orderid, start_lat, start_lon, end_lat, end_lon, start_time, status, type)
+                        (vid, custid, orderid, start_lat, start_lon,
+                        end_lat, end_lon, start_time, status, type)
                         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'''
-            with sqlConnection.cursor() as cursor:
-                cursor.execute(statement, data)
-                sqlConnection.commit()
-
+            cursor = connectToSQLDB.cursor()
+            cursor.execute(statement, data)
+            sqlConnection.commit()
+            cursor.close()
+            
             eta = getEta()[1]
             print(eta)
-        
+            
             vehicleDict['ETA'] = eta
-        
+            
             status = 200
             responseDict = vehicleDict
         
@@ -136,25 +147,28 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 data.append(entry)
             print(data)
             statement = '''INSERT INTO vehicles
-                        (status, licenseplate, fleetid, make, model, current_lat, current_lon)
+                        (status, licenseplate, fleetid,
+                        make, model, current_lat, current_lon)
                         VALUES (%s, %s, %s, %s, %s, %s, %s)'''
-            with sqlConnection.cursor() as cursor:
-                cursor.executemany(statement, data)
-                sqlConnection.commit()
+            cursor = sqlConnection.cursor()
+            cursor.executemany(statement, data)
+            sqlConnection.commit()
+            cursor.close()
 
             status = 200
-
+        
         elif '/removeVehicle' in path:
             print(dictionary)
-    
+            
             statement = 'DELETE FROM vehicles (vid) WHERE vid = %s'
             data = ((x,) for x in dictionary['deleteMe'])
-            with sqlConnection.cursor() as cursor:
-                cursor.executemany(statement, data)
-                sqlConnection.commit()
-    
+            cursor = sqlConnection.cursor()
+            cursor.executemany(statement, data)
+            sqlConnection.commit()
+            cursor.close()
+            
             status = 200
-
+        
         elif '/addFleet' in path:
             print(dictionary)
             dictionary = {
@@ -172,15 +186,16 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 data.append(entry)
             print(data)
             statement = 'INSERT INTO fleets (region, type, fmid) VALUES (%s, %s, %s)'
-            with sqlConnection.cursor() as cursor:
-                cursor.execute(statement, data)
-                sqlConnection.commit()
+            cursor = sqlConnection.cursor()
+            cursor.execute(statement, data)
+            sqlConnection.commit()
+            cursor.close()
 
             status = 200
-
+        
         else:
             status = 404
-    
+        
         sqlConnection.close()
         self.send_response(status)
         self.end_headers()
@@ -192,77 +207,143 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         # vehicleList = self.getVehicles()
         path = self.path
         print(path)
-        params = path.split('/')[-1].strip('?')
-        print(params)
+        paramsOnlyString = path.split('/')[-1].strip('?')
+        print(paramsOnlyString)
+        paramsAsArray = paramsOnlyString.split('&')
+    
+        paramKeys = [x.split('=')[0] for x in paramsAsArray]
+        if len(paramKeys != len(set(paramKeys))):
+            raise ValueError("You cannot parameterise duplicate parameters!")
+        paramVals = [x.split('=')[1] for x in paramsAsArray]
+        paramDict = dict(zip(paramKeys, paramVals))
         sqlConnection = connectToSQLDB()
-        status = 200
         responseDict = {}
+    
         if '/vehicleRequest' in path:
-            data = ""
-            # statement = 'SELECT * FROM vehicles'
-            # if len(params) != 0:
-            data = params.split('=')[1]
-            print(data)
-            # statement += ' WHERE vid = %s'
-            # with sqlConnection.cursor() as cursor:
-            statement = '''SELECT vehicles.fleetid, vid, make, model, current_lat, current_lon,
-                        status, licenseplate, last_heartbeat
-                        FROM vehicles, fleets, fleetmanagers
-                        WHERE vehicles.fleetid = fleets.fleetid AND
-                        fleetmanagers.username = %s
-                        '''
-            print(statement)
+            # can make a get request for vehicles based on fmuser, oid, vid
+            statement = 'SELECT * FROM vehicles'
             cursor = sqlConnection.cursor()
-            cursor.execute(statement, (data,))
+            cursor.execute(statement)
             rows = cursor.fetchall()
-            # print(vehicles)
-            vehicles = []
-            for row in rows:
-                print(row)
-                parsed = [row[0], row[1], f'{row[2]}: {row[3]}',
-                f'Lat: {float(row[4])} Lon: {float(row[5])}',
-                row[6], None, row[7], row[8]]
-                vehicles.append(parsed)
-            for i, entry in enumerate(vehicles, 1):
-                print(f'Entry {i}: {entry}')
-            responseDict = vehicles
-            # print(responseDict)
-            status = 200
-
-        elif '/etaRequest' in path:
-            oid = int(params.split('=')[1])
-            statement = 'SELECT * FROM dispatch WHERE oid = %s'
-            with sqlConnection.cursor() as cursor:
+            cursor.close()
+            vehicles = [list(x) for x in rows]
+            copyVehicles = deepcopy(vehicles)
+        
+            # Parameter for fleet master
+            if 'user' in paramKeys:
+                user = (paramDict['user'],)
+                statement = '''SELECT vehicles.fleetid
+                            FROM vehicles, fleets, fleetmanagers
+                            WHERE vehicles.fleetid = fleets.fleetid
+                            AND fleetmanagers.username = %s'''
+                cursor = sqlConnection.cursor()
+                cursor.execute(statement, user)
+                fleetIDs = cursor.fetchall()
+            
+                # Filtering out all the vehicles whose fleetids are not associated to our fleet master
+                filtered = [vehicle for ids in fleetIDs for vehicle in copyVehicles if ids in vehicles]
+            
+                # Formatting for JS data parsing
+                vehicles = [[row[3], row[0], f'{row[5]}: {row[6]}',
+                             f'Lat: {float(row[6])} Lon: {float(row[7])}',
+                             row[1], row[2], row[8]
+                             ] for row in filtered]
+        
+            # Parameter for order id
+            elif 'oid' in paramKeys:
+                oid = (paramDict['oid'])
+                statement = '''SELECT vehicles.licenseplate,
+                            vehicles.make, vehicles.model
+                            FROM dispatch, vehicles
+                            WHERE vehicles.vid = dispatch.vid
+                            AND oid = %s'''
+                cursor = sqlConnection.cursor()
                 cursor.execute(statement, oid)
-                responseDict = cursor.fetchall()
-
+                vehicles = cursor.fetchone()[0]
+                cursor.close()
+        
+            # Parameter for vehicle id
+            elif 'vid' in paramKeys:
+                vid = int(paramDict['vid'])
+                vehicles = [x for x in vehicles if vid in x][0]
+        
+            responseDict = vehicles
+            print(responseDict)
             status = 200
-
+    
+        elif '/etaRequest' in path:
+            # can ask about eta based on vid and oid
+            # cannot ask with no parameters
+            statement = '''SELECT type, vid, custid, orderid,
+                        start_lat, start_lon, end_lat, end_lon,
+                        start_time, status
+                        FROM dispatch WHERE '''
+            if 'vid' in paramKeys:
+                vid = paramDict['vid']
+                statement += f'vid = {vid}'
+            elif 'oid' in paramKeys:
+                oid = paramDict['oid']
+                statement += f'orderid = {oid}'
+            cursor = sqlConnection.cursor()
+            cursor.execute(statement)
+            dispatchTup = cursor.fetchone()[0]
+            cursor.close()
+        
+            serviceType, vid, custid, orderid, \
+            start_lat, start_lon, end_lat, end_lon, \
+            start_time, status = dispatchTup
+        
+            dispatchDict = {
+                'serviceType': serviceType,
+                'vid': vid,
+                'custid': custid,
+                'orderid': orderid,
+                'loc_0': (start_lat, start_lon),
+                'loc_f': (end_lat, end_lon),
+                'timeOrderMade': start_time,
+                'status': DispatchStatus.translate(status)
+                }
+        
+            dispatch = Dispatch(**dispatchDict)
+        
+            statement = 'SELECT current_lat, current_lon FROM vehicles WHERE vid = %s'
+            cursor = sqlConnection.cursor()
+            cursor.execute(statement)
+            curPos = cursor.fetchone()[0]
+            cursor.close()
+            eta = dispatch.getETA(curPos)
+        
+            responseDict = {
+                'ETA': eta
+                }
+            print(responseDict)
+            status = 200
+    
         elif '/getDispatch' in path:
-            vid = int(params.split('=')[1])
-            statement = 'SELECT * FROM dispatch WHERE vid = %s'
-            dispatchTup = ()
-            with sqlConnection.cursor() as cursor:
-                cursor.execute(statement, vid)
-                dispatchTup = cursor.fetchall()
-
-            dispatchID = [list(x)[0] for x in dispatchTup]
-            renderedCols = [list(x)[2:4] + list(x)[6:10] for x in dispatchTup]
-
+            vid = paramDict['vid']
+            statement = '''SELECT did, orderid, end_lat, end_lon,
+                        status, start_time, type
+                        FROM dispatch WHERE vid = %s'''
+            cursor = sqlConnection.cursor()
+            cursor.execute(statement, vid)
+            dispatchTup = cursor.fetchall()
+            cursor.close()
+            renderCols = []
+            for row in dispatchTup:
+                lat = row[2]
+                lon = row[3]
+                # insert human readable here
+                revGeo = None
+                parsed = [row[0], row[1], revGeo, row[4], row[5], row[6]]
+                renderCols.append(parsed)
+        
+            responseDict = renderCols
+            print(responseDict)
             status = 200
-            responseDict = dict(zip(dispatchID, renderedCols))
-            # for key, value in zip(dispatchID, renderedCols):
-            #     responseDict[f'dispatch{key}'] = {
-            #         'orderID': value[1],
-            #         'custID': value[0],
-            #         'dest': (value[2], value[3]),
-            #         'timeOrderPlaced': value[4],
-            #         'status': value[5]
-            #     }
-
+    
         else:
             status = 404
-
+    
         sqlConnection.close()
         self.send_response(status)
         self.end_headers()
