@@ -7,7 +7,7 @@ class Fleet(object):
         self.fleetid = fleetid
         self.fmid = fmid
         self.region = region
-        self.sType = serviceType
+        self.serviceType = serviceType
     
     # def getVehicles(self):
     #     print('get vehicles')
@@ -23,12 +23,10 @@ class Fleet(object):
         return self.__dict__
     
     def __repr__(self):
-        return f'''{self.fleetid}, {self.fmid}, {self.region}, {self.sType}'''
+        return f'''{self.fleetid}, {self.fmid}, {self.region}, {self.serviceType}'''
     
     def __str__(self):
-        return f'''
-Fleet ID: {self.fleetid}
+        return f'''Fleet ID: {self.fleetid}
 Fleet Manager: {self.fleetid}
 Region Coverage: {self.region}
-Service Type: {self.sType}
-'''
+Service Type: {self.serviceType}'''
