@@ -212,10 +212,11 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         paramsAsArray = paramsOnlyString.split('&')
     
         paramKeys = [x.split('=')[0] for x in paramsAsArray]
-        if len(paramKeys != len(set(paramKeys))):
+        if len(paramKeys) != len(set(paramKeys)):
             raise ValueError("You cannot parameterise duplicate parameters!")
         paramVals = [x.split('=')[1] for x in paramsAsArray]
         paramDict = dict(zip(paramKeys, paramVals))
+
         sqlConnection = connectToSQLDB()
         responseDict = {}
     
@@ -226,8 +227,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             cursor.execute(statement)
             rows = cursor.fetchall()
             cursor.close()
-            vehicles = [list(x) for x in rows]
-            copyVehicles = deepcopy(vehicles)
+            vehicles = [x for x in rows]
         
             # Parameter for fleet master
             if 'user' in paramKeys:
@@ -239,33 +239,45 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 cursor = sqlConnection.cursor()
                 cursor.execute(statement, user)
                 fleetIDs = cursor.fetchall()
-            
+
                 # Filtering out all the vehicles whose fleetids are not associated to our fleet master
-                filtered = [vehicle for ids in fleetIDs for vehicle in copyVehicles if ids in vehicles]
-            
-                # Formatting for JS data parsing
-                vehicles = [[row[3], row[0], f'{row[5]}: {row[6]}',
-                             f'Lat: {float(row[6])} Lon: {float(row[7])}',
-                             row[1], row[2], row[8]
-                             ] for row in filtered]
+                vehicles = [vehicle for ids in fleetIDs for vehicle in rows if ids in rows]
+
+                # # Formatting for JS data parsing
+                # vehicles = [[row[3], row[0], f'{row[5]}: {row[6]}',
+                #              f'Lat: {float(row[6])} Lon: {float(row[7])}',
+                #              row[1], row[2], row[8]
+                #              ] for row in filtered]
         
             # Parameter for order id
             elif 'oid' in paramKeys:
                 oid = (paramDict['oid'])
-                statement = '''SELECT vehicles.licenseplate,
-                            vehicles.make, vehicles.model
+                statement = '''SELECT vehicles.*
                             FROM dispatch, vehicles
                             WHERE vehicles.vid = dispatch.vid
                             AND oid = %s'''
                 cursor = sqlConnection.cursor()
                 cursor.execute(statement, oid)
-                vehicles = cursor.fetchone()[0]
+                vehicles = cursor.fetchone()
                 cursor.close()
 
             # Parameter for vehicle id
             elif 'vid' in paramKeys:
                 vid = int(paramDict['vid'])
-                vehicle = [x for x in vehicles if vid in x][0]
+                vehicles = [x for x in rows if vid in x]
+
+            vehicleCols = ['status', 'licenseplate', 'fleetid', 'make', 'model',
+                           'current_lat', 'current_lon', 'last_heartbeat']
+            vids = [x[0] for x in vehicles]
+            attr = [x[1:] for x in vehicles]
+
+            vehicles = {}
+            for vid in vids:
+                key = f'VehicleID{vid}'
+                vehicles[key] = {}
+                for a in attr:
+                    for col, e in zip(vehicleCols, a):
+                        vehicles[key][col] = e
 
             responseDict = vehicles
             print(responseDict)
