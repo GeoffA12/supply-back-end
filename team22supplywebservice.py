@@ -25,13 +25,13 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         length = int(self.headers['content-length'])
         body = self.rfile.read(length)
         return json.loads(body)
-    
+
     '''
     data I want or am expecting
     dictionary = {
             'serviceType': ServiceType.DRY_CLEANING,
-            'customerID': 1234567,
-            'orderID': 1234,
+            'custid': 1234567,
+            'orderid': 1234,
             'destination': {
                 'lat': 123,
                 'lon': 123
@@ -261,12 +261,12 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 cursor.execute(statement, oid)
                 vehicles = cursor.fetchone()[0]
                 cursor.close()
-        
+
             # Parameter for vehicle id
             elif 'vid' in paramKeys:
                 vid = int(paramDict['vid'])
-                vehicles = [x for x in vehicles if vid in x][0]
-        
+                vehicle = [x for x in vehicles if vid in x][0]
+
             responseDict = vehicles
             print(responseDict)
             status = 200
@@ -281,9 +281,11 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             if 'vid' in paramKeys:
                 vid = paramDict['vid']
                 statement += f'vid = {vid}'
+
             elif 'oid' in paramKeys:
                 oid = paramDict['oid']
                 statement += f'orderid = {oid}'
+
             cursor = sqlConnection.cursor()
             cursor.execute(statement)
             dispatchTup = cursor.fetchone()[0]
