@@ -1,3 +1,4 @@
+
 import http.server
 from http.server import BaseHTTPRequestHandler
 import json
@@ -51,7 +52,9 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             print(dictionary)
             # Query all vehicles whose status is 'Active' and are a part of the fleet whose service time is the
             # incoming order's service type
-            data = [1, dictionary['serviceType'], ]
+            dictionary['serviceType'] = ServiceType.translate(dictionary['serviceType'])
+            print(dictionary['serviceType'])
+            data = [1, dictionary['serviceType'].value, ]
             statement = '''SELECT vid, licenseplate,
                         make, model, current_lat, current_lon
                         FROM vehicles, fleets
@@ -84,7 +87,9 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             print(model)
             print(vLon)
             print(vLat)
-            
+
+            vLat = float(vLat)
+            vLon = float(vLon)
             vehicleDict = {
                 'vid': vid,
                 'licensePlate': licensePlate,
@@ -121,7 +126,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                         (vid, custid, orderid, start_lat, start_lon,
                         end_lat, end_lon, start_time, status, type)
                         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'''
-            cursor = connectToSQLDB.cursor()
+            cursor = sqlConnection.cursor()
             cursor.execute(statement, data)
             sqlConnection.commit()
             cursor.close()
@@ -346,8 +351,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         elif '/getDispatch' in path:
             vid = (paramDict['vid'],)
             print(vid)
-            statement = '''SELECT did, orderid, end_lat, end_lon,
-                        status, start_time, type
+            statement = '''SELECT did, orderid, custid, end_lat, end_lon,
+                        type, start_time, status
                         FROM dispatch WHERE vid = %s'''
             print(statement)
             cursor = sqlConnection.cursor()
@@ -355,17 +360,36 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             dispatchTup = cursor.fetchall()
             cursor.close()
             print('tup:', dispatchTup)
-            renderCols = []
-            for row in dispatchTup:
-                lat = row[2]
-                lon = row[3]
-                # insert human readable here
-                revGeo = None
-                parsed = [row[0], row[1], revGeo, row[4], row[5], row[6]]
-                renderCols.append(parsed)
-        
-            responseDict = renderCols
+            dispatchListCopy = [list(x) for x in dispatchTup]
+            print('List: ', dispatchListCopy)
+
+
+            latlons = [(x[3], x[4]) for x in dispatchListCopy]
+            dispatchList = [x[0:3] + x[5:] for x in dispatchListCopy]
+
+            # eventually, none will ne a function that takes in a lat lon tup and translate into address
+            revGeos = [None for x in latlons]
+            for dispatch, address in zip(dispatchList, revGeos):
+                dispatch.insert(3, address)
+
+            dispatchCols = ['orderid', 'customerid', 'destination', 'serviceType',
+                           'timeOrderCreated', 'status']
+            dids = [x[0] for x in dispatchList]
+            attr = [x[1:] for x in dispatchList]
+
+            dispatches = {}
+            for did, attribute, in zip(dids, attr):
+                key = f'DispatchID{did}'
+                dispatches[key] = {}
+                for col, e in zip(dispatchCols, attribute):
+                    if col == 'timeOrderCreated':
+                        e = e.isoformat().replace('T', ' ')
+                    dispatches[key][col] = e
+
+            responseDict = dispatches
             print(responseDict)
+            for k, v in responseDict.items():
+                print(k,v)
             status = 200
     
         else:
