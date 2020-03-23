@@ -247,19 +247,12 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                                 AND fleetmanagers.username = %s'''
                     cursor = sqlConnection.cursor()
                     cursor.execute(statement, user)
-                    ids = cursor.fetchall()
+                    fleetIDs = cursor.fetchall()
                     # print(ids)
-                    fleetIDs = list(set([x[0] for x in ids]))
+                    fleetIDSet = set(fleetIDs)
                     # print(fleetIDs)
                     # Filtering out all the vehicles whose fleetids are not associated to our fleet master
-                    vehicles = [i for e in fleetIDs for i in rows if e in i]
-                    # print(vehicles)
-
-                    # # Formatting for JS data parsing
-                    # vehicles = [[row[3], row[0], f'{row[5]}: {row[6]}',
-                    #              f'Lat: {float(row[6])} Lon: {float(row[7])}',
-                    #              row[1], row[2], row[8]
-                    #              ] for row in filtered]
+                    vehicles = [vehicle for fleetID in fleetIDSet for vehicle in rows if fleetID in vehicle]
         
                 # Parameter for order id
                 elif 'oid' in paramKeys:
