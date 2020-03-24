@@ -18,7 +18,7 @@ from copy import deepcopy
 
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
-    ver = '0.4.0'
+    ver = '0.4.1'
     
     # How to convert the body from a string to a dictionary
     # use 'loads' to convert from byte/string to a dictionary!
@@ -164,9 +164,11 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         
         elif '/removeVehicle' in path:
             print(dictionary)
-            
-            statement = 'DELETE FROM vehicles (vid) WHERE vid = %s'
-            data = ((x,) for x in dictionary['deleteMe'])
+            del dictionary['fleetNum']
+            print(dictionary)
+            statement = 'DELETE FROM vehicles WHERE vid = %s'
+            data = [(x,) for x in dictionary.values()]
+            print(data)
             cursor = sqlConnection.cursor()
             cursor.executemany(statement, data)
             sqlConnection.commit()
@@ -240,7 +242,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 # Parameter for fleet master
                 if 'user' in paramKeys:
                     user = (paramDict['user'],)
-                    # print(user)
+                    print(user)
                     statement = '''SELECT vehicles.fleetid
                                 FROM vehicles, fleets, fleetmanagers
                                 WHERE vehicles.fleetid = fleets.fleetid
@@ -249,8 +251,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     cursor.execute(statement, user)
                     fleetIDs = cursor.fetchall()
                     # print(ids)
-                    fleetIDSet = set(fleetIDs)
-                    # print(fleetIDs)
+                    fleetIDSet = set([x[0] for x in fleetIDs])
+                    print(fleetIDSet)
                     # Filtering out all the vehicles whose fleetids are not associated to our fleet master
                     vehicles = [vehicle for fleetID in fleetIDSet for vehicle in rows if fleetID in vehicle]
         
