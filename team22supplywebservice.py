@@ -232,20 +232,20 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     if 'emailExt' in paramDict:
                         user += f'@{paramDict["emailExt"]}'
                     print(user)
-                    statement = '''SELECT vehicles.fleetid
-                                FROM vehicles, fleets, fleetmanagers
-                                WHERE vehicles.fleetid = fleets.fleetid
-                                AND fleetmanagers.username = %s'''
-                    cursor.execute(statement, (user,))
+                    statement = '''SELECT fleets.fleetid
+                                FROM fleets, fleetmanagers
+                                WHERE fleetmanagers.username = %s
+                                OR fleetmanagers.email = %s'''
+
+                    cursor.execute(statement, (user, user,))
                     fleetIDs = cursor.fetchall()
                     print(fleetIDs)
-                    if not fleetIDs:
-                        statement = '''SELECT vehicles.fleetid
-                                    FROM vehicles, fleets, fleetmanagers
-                                    WHERE vehicles.fleetid = fleets.fleetid
-                                    AND fleetmanagers.email = %s'''
-                        cursor.execute(statement, (user,))
-                        fleetIDs = cursor.fetchall()
+                    # if not fleetIDs:
+                    #     statement = '''SELECT fleets.fleetid
+                    #             FROM fleets, fleetmanagers
+                    #             WHERE '''
+                    #     cursor.execute(statement, (user, user,))
+                    #     fleetIDs = cursor.fetchall()
                     # print(ids)
                     fleetIDSet = set([x[0] for x in fleetIDs])
                     print(fleetIDSet)
