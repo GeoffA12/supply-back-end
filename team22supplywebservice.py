@@ -119,7 +119,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             data = (
                 dispatch.vid, dispatch.custid, dispatch.orderid,
                 dispatch.loc_0[0], dispatch.loc_0[1], dispatch.loc_f[0], dispatch.loc_f[1],
-                dispatch.timeCreated, dispatch.status.value, dispatch.serviceType.value
+                dispatch.timeCreated, dispatch.status.value, dispatch.serviceType.value,
                 )
             statement = '''INSERT INTO dispatch
                         (vid, custid, orderid, start_lat, start_lon,
@@ -175,10 +175,11 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             region = dictionary['region']
             serviceType = dictionary['serviceType']
             statement = 'SELECT fmid FROM fleetmanagers WHERE email = %s OR username = %s'
-            cursor.execute(statement, (emailOrUser, emailOrUser))
+            data = (emailOrUser, emailOrUser,)
+            cursor.execute(statement, data)
     
             fmid = cursor.fetchone()[0]
-            data = (region, serviceType, fmid)
+            data = (region, serviceType, fmid,)
             print(data)
             statement = 'INSERT INTO fleets (region, type, fmid) VALUES (%s, %s, %s)'
             cursor.execute(statement, data)
@@ -285,15 +286,15 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                         start_time, status
                         FROM dispatch WHERE '''
             if 'vid' in paramKeys:
-                vid = paramDict['vid']
-                statement += f'vid = {vid}'
+                data = (int(paramDict['vid']),)
+                statement += 'vid = %s'
 
             elif 'oid' in paramKeys:
-                oid = paramDict['oid']
-                statement += f'orderid = {oid}'
+                data = (int(paramDict['oid']),)
+                statement += 'orderid = %s'
 
             cursor = sqlConnection.cursor()
-            cursor.execute(statement)
+            cursor.execute(statement, data)
             dispatchTup = cursor.fetchone()[0]
             cursor.close()
         
