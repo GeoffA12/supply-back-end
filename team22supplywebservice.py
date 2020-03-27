@@ -281,13 +281,13 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                         colVal = colVal.isoformat()
                     vehicleDict[colName] = colVal
                 vehiclesDictList.append(vehicleDict)
-        
+
             responseBody = vehicles
             print(responseBody)
             status = 200
-            for vehicleDict in responseBody:
-                for k, v in vehicleDict.items():
-                    print(k, v)
+            # for vehicleDict in responseBody:
+            #     for k, v in vehicleDict.items():
+            #         print(k, v)
 
         # TODO: Not sure if it works
         elif '/etaRequest' in path:
