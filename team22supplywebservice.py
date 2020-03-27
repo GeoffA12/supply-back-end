@@ -282,7 +282,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     vehicleDict[colName] = colVal
                 vehiclesDictList.append(vehicleDict)
 
-            responseBody = vehicles
+            responseBody = vehiclesDictList
             print(responseBody)
             status = 200
             # for vehicleDict in responseBody:
