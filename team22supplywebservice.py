@@ -11,6 +11,7 @@ from enums.dispatchstatus import DispatchStatus
 from utils.vehicleutils import getRoute, getEta
 from utils.serverutils import connectToSQLDB
 from copy import deepcopy
+# from datetime import datetime
 
 
 # def connectToSQLDB():
@@ -276,6 +277,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 for colName, colVal in zip(vehicleColsNames, vehicle):
                     if colName == 'current_lat' or colName == 'current_lon':
                         colVal = float(colVal)
+                    elif colName == 'date_added':
+                        colVal = colVal.isoformat()
                     vehicleDict[colName] = colVal
                 vehiclesDictList.append(vehicleDict)
         
