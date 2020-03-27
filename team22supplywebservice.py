@@ -251,28 +251,15 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         
                 # Parameter for order id
                 elif 'oid' in paramKeys:
-<<<<<<< HEAD
-                    oid = (paramDict['oid'],)
-                    print(oid)
-=======
                     oid = paramDict['oid']
->>>>>>> c827a3772ba3ebf996b11a93e8c5b182386e7b68
                     statement = '''SELECT vehicles.*
                                 FROM dispatch, vehicles
                                 WHERE vehicles.vid = dispatch.vid
                                 AND orderid = %s'''
-<<<<<<< HEAD
-                    cursor = sqlConnection.cursor()
-                    cursor.execute(statement, oid)
-                    vehicles = cursor.fetchall()
-                    print(vehicles)
-                    cursor.close()
 
-=======
                     cursor.execute(statement, (oid,))
                     vehicles = cursor.fetchone()
             
->>>>>>> c827a3772ba3ebf996b11a93e8c5b182386e7b68
                 # Parameter for vehicle id
                 elif 'vid' in paramKeys:
                     vid = int(paramDict['vid'])
