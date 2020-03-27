@@ -44,12 +44,14 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         path = self.path
         print(path)
-        responseDict = {}
-        dictionary = self.getPOSTBody()
         status = 404
+
+        dictionary = self.getPOSTBody()
         sqlConnection = connectToSQLDB()
         cursor = sqlConnection.cursor()
+        responseBody = {}
 
+        # TODO: needs to be formatted
         if '/vehicleRequest' in path:
             print(dictionary)
             # Query all vehicles whose status is 'Active' and are a part of the fleet whose service time is the
@@ -132,11 +134,12 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             print(eta)
             
             vehicleDict['ETA'] = eta
-            
+    
             status = 200
-            responseDict = vehicleDict
+            responseBody = vehicleDict
         
         elif '/addVehicle' in path:
+            status = 200
             print(dictionary)
             fleetToAddTo = dictionary.pop('fleetNum')
             print(dictionary)
@@ -155,29 +158,29 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             cursor.executemany(statement, data)
             sqlConnection.commit()
 
-            status = 200
-        
         elif '/removeVehicle' in path:
-            print(dictionary)
+            status = 200
+            # print(dictionary)
             del dictionary['fleetNum']
             print(dictionary)
+    
             statement = 'DELETE FROM vehicles WHERE vid = %s'
             data = [(x,) for x in dictionary.values()]
             print(data)
             cursor.executemany(statement, data)
             sqlConnection.commit()
             
-            status = 200
-        
         elif '/addFleet' in path:
+            status = 200
             print(dictionary)
+    
             emailOrUser = dictionary['username']
             region = dictionary['region']
             serviceType = dictionary['serviceType']
+    
             statement = 'SELECT fmid FROM fleetmanagers WHERE email = %s OR username = %s'
             data = (emailOrUser, emailOrUser,)
             cursor.execute(statement, data)
-    
             fmid = cursor.fetchone()[0]
             data = (region, serviceType, fmid,)
             print(data)
@@ -185,20 +188,19 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             cursor.execute(statement, data)
             sqlConnection.commit()
     
-            status = 200
-
         cursor.close()
         sqlConnection.close()
         self.send_response(status)
         self.end_headers()
-        res = json.dumps(responseDict)
+        res = json.dumps(responseBody)
         bytesStr = res.encode('utf-8')
         self.wfile.write(bytesStr)
     
     def do_GET(self):
-        # vehicleList = self.getVehicles()
         path = self.path
         print(path)
+        status = 404
+    
         hasParams = '?' in path
         if hasParams:
             paramsOnlyString = path.split('/')[-1].strip('?')
@@ -210,30 +212,27 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 raise ValueError("You cannot parameterise duplicate parameters!")
             paramVals = [x.split('=')[1] for x in paramsAsArray]
             paramDict = dict(zip(paramKeys, paramVals))
-
+    
         sqlConnection = connectToSQLDB()
-        responseDict = {}
-
+        cursor = sqlConnection.cursor()
+        responseBody = {}
+    
         if '/vehicleRequest' in path:
-            # can make a get request for vehicles based on fmuser, oid, vid
             statement = 'SELECT * FROM vehicles'
-            cursor = sqlConnection.cursor()
             cursor.execute(statement)
             rows = cursor.fetchall()
-            cursor.close()
             vehicles = [list(x) for x in rows]
             # print(vehicles)
             if hasParams:
                 # Parameter for fleet master
                 if 'user' in paramKeys:
-                    user = (paramDict['user'],)
+                    user = paramDict['user']
                     print(user)
                     statement = '''SELECT vehicles.fleetid
                                 FROM vehicles, fleets, fleetmanagers
                                 WHERE vehicles.fleetid = fleets.fleetid
                                 AND fleetmanagers.username = %s'''
-                    cursor = sqlConnection.cursor()
-                    cursor.execute(statement, user)
+                    cursor.execute(statement, (user,))
                     fleetIDs = cursor.fetchall()
                     # print(ids)
                     fleetIDSet = set([x[0] for x in fleetIDs])
@@ -243,40 +242,37 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         
                 # Parameter for order id
                 elif 'oid' in paramKeys:
-                    oid = (paramDict['oid'],)
+                    oid = paramDict['oid']
                     statement = '''SELECT vehicles.*
                                 FROM dispatch, vehicles
                                 WHERE vehicles.vid = dispatch.vid
-                                AND oid = %s'''
-                    cursor = sqlConnection.cursor()
-                    cursor.execute(statement, oid)
+                                AND orderid = %s'''
+                    cursor.execute(statement, (oid,))
                     vehicles = cursor.fetchone()
-                    cursor.close()
-
+            
                 # Parameter for vehicle id
                 elif 'vid' in paramKeys:
                     vid = int(paramDict['vid'])
                     vehicles = [x for x in rows if vid in x]
-
-            vehicleCols = ['status', 'licenseplate', 'fleetid', 'make', 'model',
-                               'current_lat', 'current_lon', 'last_heartbeat']
-            vids = [x[0] for x in vehicles]
-            attr = [x[1:] for x in vehicles]
-
-            vehicles = {}
-            for vid, attribute in zip(vids, attr):
-                key = f'VehicleID{vid}'
-                vehicles[key] = {}
-                for col, e in zip(vehicleCols, attribute):
-                    if col == 'current_lat' or col == 'current_lon':
-                        e = float(e)
-                    vehicles[key][col] = e
-
-            responseDict = vehicles
-            print(responseDict)
-            for k, v in responseDict.items():
-                print(k,v)
+        
+            vehicleColsNames = ['status', 'licenseplate', 'fleetid', 'make', 'model',
+                                'current_lat', 'current_lon', 'last_heartbeat', 'date_added']
+        
+            vehiclesDictList = []
+            for vehicle in vehicles:
+                vehicleDict = {}
+                for colName, colVal in zip(vehicleColsNames, vehicle):
+                    if colName == 'current_lat' or colName == 'current_lon':
+                        colVal = float(colVal)
+                    vehicleDict[colName] = colVal
+                vehiclesDictList.append(vehicleDict)
+        
+            responseBody = vehicles
+            print(responseBody)
             status = 200
+            for vehicleDict in responseBody:
+                for k, v in vehicleDict.items():
+                    print(k, v)
     
         elif '/etaRequest' in path:
             # can ask about eta based on vid and oid
@@ -321,11 +317,11 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             curPos = cursor.fetchone()[0]
             cursor.close()
             eta = dispatch.getETA(curPos)
-        
-            responseDict = {
+
+            responseBody = {
                 'ETA': eta
                 }
-            print(responseDict)
+            print(responseBody)
             status = 200
     
         elif '/getDispatch' in path:
@@ -366,19 +362,17 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                         e = e.isoformat().replace('T', ' ')
                     dispatches[key][col] = e
 
-            responseDict = dispatches
-            print(responseDict)
-            for k, v in responseDict.items():
-                print(k,v)
+            responseBody = dispatches
+            print(responseBody)
             status = 200
+            for k, v in responseBody.items():
+                print(k, v)
     
-        else:
-            status = 404
-
+        cursor.close()
         sqlConnection.close()
         self.send_response(status)
         self.end_headers()
-        res = json.dumps(responseDict)
+        res = json.dumps(responseBody)
         bytesStr = res.encode('utf-8')
         self.wfile.write(bytesStr)
 
