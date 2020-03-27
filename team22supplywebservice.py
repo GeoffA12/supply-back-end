@@ -237,6 +237,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                                 AND fleetmanagers.username = %s'''
                     cursor.execute(statement, (user,))
                     fleetIDs = cursor.fetchall()
+                    print(fleetIDs)
                     if fleetIDs is None:
                         statement = '''SELECT vehicles.fleetid
                                     FROM vehicles, fleets, fleetmanagers
