@@ -46,8 +46,10 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         print(path)
         responseDict = {}
         dictionary = self.getPOSTBody()
+        status = 404
         sqlConnection = connectToSQLDB()
-        
+        cursor = sqlConnection.cursor()
+
         if '/vehicleRequest' in path:
             print(dictionary)
             # Query all vehicles whose status is 'Active' and are a part of the fleet whose service time is the
@@ -60,16 +62,13 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                         FROM vehicles, fleets
                         WHERE vehicles.status = %s AND type = %s
                         AND vehicles.fleetid = fleets.fleetid'''
-            cursor = sqlConnection.cursor()
             cursor.execute(statement, tuple(data))
             vehicleEntries = cursor.fetchall()
             if vehicleEntries is None:
                 data[0] = 2
-                cursor = sqlConnection.cursor()
                 cursor.execute(statement, tuple(data))
                 vehicleEntries = cursor.fetchall()
             
-            cursor.close()
             print(vehicleEntries)
             allPostions = [(x[4], x[5]) for x in vehicleEntries]
             
@@ -126,10 +125,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                         (vid, custid, orderid, start_lat, start_lon,
                         end_lat, end_lon, start_time, status, type)
                         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'''
-            cursor = sqlConnection.cursor()
             cursor.execute(statement, data)
             sqlConnection.commit()
-            cursor.close()
             
             eta = getEta()[1]
             print(eta)
@@ -155,10 +152,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                         (status, licenseplate, fleetid,
                         make, model, current_lat, current_lon)
                         VALUES (%s, %s, %s, %s, %s, %s, %s)'''
-            cursor = sqlConnection.cursor()
             cursor.executemany(statement, data)
             sqlConnection.commit()
-            cursor.close()
 
             status = 200
         
@@ -169,40 +164,29 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             statement = 'DELETE FROM vehicles WHERE vid = %s'
             data = [(x,) for x in dictionary.values()]
             print(data)
-            cursor = sqlConnection.cursor()
             cursor.executemany(statement, data)
             sqlConnection.commit()
-            cursor.close()
             
             status = 200
         
         elif '/addFleet' in path:
             print(dictionary)
-            dictionary = {
-                'newFleet1': {
-                    'region': 'Austin',
-                    'serviceType': 'Dry Cleaning',
-                    'fmid': 123
-                    }
-                }
-            data = []
-            for key, value in dictionary.items():
-                print(key)
-                entry = (value['region'], value['serviceType'], value['fmid'])
-                print(entry)
-                data.append(entry)
+            emailOrUser = dictionary['username']
+            region = dictionary['region']
+            serviceType = dictionary['serviceType']
+            statement = 'SELECT fmid FROM fleetmanagers WHERE email = %s OR username = %s'
+            cursor.execute(statement, (emailOrUser, emailOrUser))
+    
+            fmid = cursor.fetchone()[0]
+            data = (region, serviceType, fmid)
             print(data)
             statement = 'INSERT INTO fleets (region, type, fmid) VALUES (%s, %s, %s)'
-            cursor = sqlConnection.cursor()
             cursor.execute(statement, data)
             sqlConnection.commit()
-            cursor.close()
-
+    
             status = 200
-        
-        else:
-            status = 404
-        
+
+        cursor.close()
         sqlConnection.close()
         self.send_response(status)
         self.end_headers()
