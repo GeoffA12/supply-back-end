@@ -234,6 +234,13 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                                 AND fleetmanagers.username = %s'''
                     cursor.execute(statement, (user,))
                     fleetIDs = cursor.fetchall()
+                    if fleetIDs is None:
+                        statement = '''SELECT vehicles.fleetid
+                                    FROM vehicles, fleets, fleetmanagers
+                                    WHERE vehicles.fleetid = fleets.fleetid
+                                    AND fleetmanagers.email = %s'''
+                        cursor.execute(statement, (user,))
+                        fleetIDs = cursor.fetchall()
                     # print(ids)
                     fleetIDSet = set([x[0] for x in fleetIDs])
                     print(fleetIDSet)
