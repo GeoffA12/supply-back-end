@@ -273,11 +273,13 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             fleets = {
                 'fleets': fleetIDs
                 }
+            print(fleets)
 
             vehicleColsNames = ['vehicleid', 'status', 'licenseplate', 'fleetid', 'make', 'model',
                                 'current_lat', 'current_lon', 'last_heartbeat', 'date_added']
 
             vehiclesDictList = [fleets]
+            print(vehiclesDictList)
             for vehicle in vehicles:
                 vehicleDict = {}
                 for colName, colVal in zip(vehicleColsNames, vehicle):
