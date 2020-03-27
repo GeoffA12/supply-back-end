@@ -251,6 +251,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     # print(ids)
                     fleetIDSet = set([x[0] for x in fleetIDs])
                     print(fleetIDSet)
+                    fleetIDs = list(fleetIDSet)
                     # Filtering out all the vehicles whose fleetids are not associated to our fleet master
                     vehicles = [vehicle for fleetID in fleetIDSet for vehicle in rows if fleetID in vehicle]
         
