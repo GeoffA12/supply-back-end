@@ -227,6 +227,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 # Parameter for fleet master
                 if 'user' in paramKeys:
                     user = paramDict['user']
+                    if 'emailExt' in paramDict:
+                        user += f'@{paramDict["emailExt"]}'
                     print(user)
                     statement = '''SELECT vehicles.fleetid
                                 FROM vehicles, fleets, fleetmanagers
