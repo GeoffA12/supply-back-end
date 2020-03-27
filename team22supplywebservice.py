@@ -255,7 +255,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     vid = int(paramDict['vid'])
                     vehicles = [x for x in rows if vid in x]
         
-            vehicleColsNames = ['status', 'licenseplate', 'fleetid', 'make', 'model',
+            vehicleColsNames = ['vehicleid', 'status', 'licenseplate', 'fleetid', 'make', 'model',
                                 'current_lat', 'current_lon', 'last_heartbeat', 'date_added']
         
             vehiclesDictList = []
@@ -273,7 +273,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             for vehicleDict in responseBody:
                 for k, v in vehicleDict.items():
                     print(k, v)
-    
+
+        # TODO: Not sure if it works
         elif '/etaRequest' in path:
             # can ask about eta based on vid and oid
             # cannot ask with no parameters
@@ -323,7 +324,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 }
             print(responseBody)
             status = 200
-    
+
+        # TODO: Need to change response body
         elif '/getDispatch' in path:
             vid = (paramDict['vid'],)
             print(vid)
