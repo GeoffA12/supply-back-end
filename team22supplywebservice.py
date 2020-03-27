@@ -224,6 +224,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             cursor.execute(statement)
             rows = cursor.fetchall()
             vehicles = [list(x) for x in rows]
+            fleetIDs = list(set([x[3] for x in vehicles]))
+
             # print(vehicles)
             if hasParams:
                 # Parameter for fleet master
@@ -268,7 +270,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     vid = int(paramDict['vid'])
                     vehicles = [x for x in rows if vid in x]
 
-            fleetIDs = list(set([x[3] for x in vehicles]))
             print(fleetIDs)
             fleets = {
                 'fleets': fleetIDs
