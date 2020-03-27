@@ -238,7 +238,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     cursor.execute(statement, (user,))
                     fleetIDs = cursor.fetchall()
                     print(fleetIDs)
-                    if fleetIDs is None:
+                    if not fleetIDs:
                         statement = '''SELECT vehicles.fleetid
                                     FROM vehicles, fleets, fleetmanagers
                                     WHERE vehicles.fleetid = fleets.fleetid
