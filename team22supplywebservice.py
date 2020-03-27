@@ -147,14 +147,15 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             data = []
             for key, value in dictionary.items():
                 print(key)
-                entry = (1, value['LicensePlate'], int(fleetToAddTo), value['Make'], value['Model'], 12.12, 34.34)
+                entry = (1, value['LicensePlate'], int(fleetToAddTo), value['Make'], value['Model'], 30.2264,
+                         97.7553, value['DateAdded'])
                 print(entry)
                 data.append(entry)
             print(data)
             statement = '''INSERT INTO vehicles
                         (status, licenseplate, fleetid,
-                        make, model, current_lat, current_lon)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s)'''
+                        make, model, current_lat, current_lon, date_added)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)'''
             cursor.executemany(statement, data)
             sqlConnection.commit()
 
