@@ -262,16 +262,22 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
                     cursor.execute(statement, (oid,))
                     vehicles = cursor.fetchone()
-            
+
                 # Parameter for vehicle id
                 elif 'vid' in paramKeys:
                     vid = int(paramDict['vid'])
                     vehicles = [x for x in rows if vid in x]
-        
+
+            fleetIDs = set([x[3] for x in vehicles])
+            print(fleetIDs)
+            fleets = {
+                'fleets': fleetIDs
+                }
+
             vehicleColsNames = ['vehicleid', 'status', 'licenseplate', 'fleetid', 'make', 'model',
                                 'current_lat', 'current_lon', 'last_heartbeat', 'date_added']
-        
-            vehiclesDictList = []
+
+            vehiclesDictList = [fleets]
             for vehicle in vehicles:
                 vehicleDict = {}
                 for colName, colVal in zip(vehicleColsNames, vehicle):
