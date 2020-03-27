@@ -30,14 +30,14 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
     '''
     data I want or am expecting
     dictionary = {
-            'serviceType': ServiceType.DRY_CLEANING,
+            'serviceType': 'DRYCLEANING',
             'custid': 1234567,
             'orderid': 1234,
             'destination': {
                 'lat': 123,
                 'lon': 123
                 },
-            'timeOrderMade': datetime(2011, 11, 4, 0, 5, 23)
+            'timeOrderMade': '2018-03-29T13:34:00.000'
             }
     '''
     
@@ -251,14 +251,28 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         
                 # Parameter for order id
                 elif 'oid' in paramKeys:
+<<<<<<< HEAD
+                    oid = (paramDict['oid'],)
+                    print(oid)
+=======
                     oid = paramDict['oid']
+>>>>>>> c827a3772ba3ebf996b11a93e8c5b182386e7b68
                     statement = '''SELECT vehicles.*
                                 FROM dispatch, vehicles
                                 WHERE vehicles.vid = dispatch.vid
                                 AND orderid = %s'''
+<<<<<<< HEAD
+                    cursor = sqlConnection.cursor()
+                    cursor.execute(statement, oid)
+                    vehicles = cursor.fetchall()
+                    print(vehicles)
+                    cursor.close()
+
+=======
                     cursor.execute(statement, (oid,))
                     vehicles = cursor.fetchone()
             
+>>>>>>> c827a3772ba3ebf996b11a93e8c5b182386e7b68
                 # Parameter for vehicle id
                 elif 'vid' in paramKeys:
                     vid = int(paramDict['vid'])

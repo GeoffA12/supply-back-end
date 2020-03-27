@@ -11,7 +11,7 @@ class Dispatch(object):
                  status=DispatchStatus.QUEUED):
         assert type(serviceType) is ServiceType
         assert type(status) is DispatchStatus
-        
+        print(timeOrderMade)
         self._serviceType = serviceType
         self._vid = vid
         self._custid = custid
