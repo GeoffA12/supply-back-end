@@ -146,13 +146,12 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             [{'fleetid': '8', 'make': 'Honda', 'model': 'Civic', 'licensePlate': 'AZ4915', 'dateAdded':
             '2020-03-28T08:34:32.698Z'}]
             '''
-    
             data = []
             for vehicleDict in postBody:
                 # This is Steds btw d: ==> 30.2264, 97.7553,
                 entry = (2, vehicleDict['licensePlate'], vehicleDict['fleetid'],
                          vehicleDict['make'], vehicleDict['model'],
-                         30.2264, 97.7553, vehicleDict['dateAdded'])
+                         30.2264, 97.7553, vehicleDict['dateAdded'].replace('T', ' ').replace('Z', ' '))
                 data.append(entry)
             print(data)
             statement = '''INSERT INTO vehicles
