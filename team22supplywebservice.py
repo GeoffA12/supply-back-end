@@ -30,7 +30,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
     '''
     data I want or am expecting
-    dictionary = {
+    postBody = {
             'serviceType': 'DRYCLEANING',
             'custid': 1234567,
             'orderid': 1234,
@@ -47,19 +47,19 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         print(path)
         status = 404
 
-        dictionary = self.getPOSTBody()
+        postBody = self.getPOSTBody()
         sqlConnection = connectToSQLDB()
         cursor = sqlConnection.cursor()
         responseBody = {}
 
         # TODO: needs to be formatted
         if '/vehicleRequest' in path:
-            print(dictionary)
+            print(postBody)
             # Query all vehicles whose status is 'Active' and are a part of the fleet whose service time is the
             # incoming order's service type
-            dictionary['serviceType'] = ServiceType.translate(dictionary['serviceType'])
-            print(dictionary['serviceType'])
-            data = [1, dictionary['serviceType'].value, ]
+            postBody['serviceType'] = ServiceType.translate(postBody['serviceType'])
+            print(postBody['serviceType'])
+            data = [1, postBody['serviceType'].value, ]
             statement = '''SELECT vid, licenseplate,
                         make, model, current_lat, current_lon
                         FROM vehicles, fleets
@@ -104,7 +104,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 }
             
             print(vehicleDict)
-            dispatchDict = deepcopy(dictionary)
+            dispatchDict = deepcopy(postBody)
             dispatchDict['vid'] = vid
             
             # Turn a destination dictionary into a tupled pair
@@ -141,16 +141,18 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         
         elif '/addVehicle' in path:
             status = 200
-            print(dictionary)
-            fleetToAddTo = dictionary.pop('fleetNum')
-            print(dictionary)
-
+            print(postBody)
+            '''
+            [{'fleetid': '8', 'make': 'Honda', 'model': 'Civic', 'licensePlate': 'AZ4915', 'dateAdded':
+            '2020-03-28T08:34:32.698Z'}]
+            '''
+    
             data = []
-            for key, value in dictionary.items():
-                print(key)
-                entry = (1, value['LicensePlate'], int(fleetToAddTo), value['Make'], value['Model'], 30.2264,
-                         97.7553, value['DateAdded'])
-                print(entry)
+            for vehicleDict in postBody:
+                # This is Steds btw d: ==> 30.2264, 97.7553,
+                entry = (2, vehicleDict['licensePlate'], vehicleDict['fleetid'],
+                         vehicleDict['make'], vehicleDict['model'],
+                         30.2264, 97.7553, vehicleDict['dateAdded'])
                 data.append(entry)
             print(data)
             statement = '''INSERT INTO vehicles
@@ -160,25 +162,25 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             cursor.executemany(statement, data)
             sqlConnection.commit()
 
+        # TODO Needs to accommodate new post body format
         elif '/removeVehicle' in path:
             status = 200
-            # print(dictionary)
-            del dictionary['fleetNum']
-            print(dictionary)
+            del postBody['fleetNum']
+            print(postBody)
     
             statement = 'DELETE FROM vehicles WHERE vid = %s'
-            data = [(x,) for x in dictionary.values()]
+            data = [(x,) for x in postBody.values()]
             print(data)
             cursor.executemany(statement, data)
             sqlConnection.commit()
             
         elif '/addFleet' in path:
             status = 200
-            print(dictionary)
+            print(postBody)
     
-            emailOrUser = dictionary['username']
-            region = dictionary['region']
-            serviceType = dictionary['serviceType']
+            emailOrUser = postBody['username']
+            region = postBody['region']
+            serviceType = postBody['serviceType']
     
             statement = 'SELECT fmid FROM fleetmanagers WHERE email = %s OR username = %s'
             data = (emailOrUser, emailOrUser,)
