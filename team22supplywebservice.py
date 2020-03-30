@@ -248,6 +248,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     vehicles = [vehicle for fleetID in fleetIDs for vehicle in rows if fleetID == vehicle[3]]
         
                 # Parameter for order id
+                # TODO: need to conform to new method of parsing
                 elif 'oid' in paramsDict:
                     oid = paramsDict['oid']
                     statement = '''SELECT vehicles.*
