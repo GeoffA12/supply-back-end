@@ -263,7 +263,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     vids = set(paramsDict['vid'])
                     print(vids)
                     print(rows)
-                    vehicles = [vehicle for vehicleID in vids for vehicle in rows if vehicleID == vehicle[1]]
+                    vehicles = [vehicle for vehicleID in vids for vehicle in rows if vehicleID == vehicle[0]]
                     print(vehicles)
 
             print(fleetIDs)
