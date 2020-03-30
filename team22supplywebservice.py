@@ -245,7 +245,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                         fleetIDs.extend(flatten)
                         print(fleetIDs)
                     print(fleetIDs)
-                    vehicles = [vehicle for fleetID in fleetIDs for vehicle in rows if fleetID in vehicle]
+                    vehicles = [vehicle for fleetID in fleetIDs for vehicle in rows if fleetID == vehicle[3]]
         
                 # Parameter for order id
                 elif 'oid' in paramsDict:
@@ -263,7 +263,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     vids = set(paramsDict['vid'])
                     print(vids)
                     print(rows)
-                    vehicles = [vehicle for vehicleID in vids for vehicle in rows if vehicleID in vehicle]
+                    vehicles = [vehicle for vehicleID in vids for vehicle in rows if vehicleID == vehicle[1]]
+                    print(vehicles)
 
             print(fleetIDs)
             fleets = {
