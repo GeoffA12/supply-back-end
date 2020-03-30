@@ -210,16 +210,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         print(paramsDict)
         hasParams = len(paramsDict) != 0
         print(hasParams)
-#        if hasParams:
-#            paramsOnlyString = path.split('/')[-1].strip('?')
-#            print(paramsOnlyString)
-#            paramsAsArray = paramsOnlyString.split('&')
-#            paramKeys = [x.split('=')[0] for x in paramsAsArray]
-#            print(paramKeys)
-#            if len(paramKeys) != len(set(paramKeys)):
-#                raise ValueError("You cannot parameterise duplicate parameters!")
-#            paramVals = [x.split('=')[1] for x in paramsAsArray]
-#            paramDict = dict(zip(paramKeys, paramVals))
     
         sqlConnection = connectToSQLDB()
         cursor = sqlConnection.cursor()
@@ -255,17 +245,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                         fleetIDs.extend(flatten)
                         print(fleetIDs)
                     print(fleetIDs)
-                    # if not fleetIDs:
-                    #     statement = '''SELECT fleets.fleetid
-                    #             FROM fleets, fleetmanagers
-                    #             WHERE '''
-                    #     cursor.execute(statement, (user, user,))
-                    #     fleetIDs = cursor.fetchall()
-                    # print(ids)
-                    # fleetIDSet = set([x[0] for x in fleetIDs])
-                    # print(fleetIDSet)
-                    # fleetIDs = list(fleetIDSet)
-                    # Filtering out all the vehicles whose fleetids are not associated to our fleet master
                     vehicles = [vehicle for fleetID in fleetIDs for vehicle in rows if fleetID in vehicle]
         
                 # Parameter for order id
@@ -281,8 +260,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
                 # Parameter for vehicle id
                 elif 'vid' in paramsDict:
-                    vid = int(paramsDict['vid'])
-                    vehicles = [x for x in rows if vid in x]
+                    vids = set(paramsDict['vid'])
+                    vehicles = [vehicle for vehicleID in vids for vehicle in rows if vehicleID in vehicle]
 
             print(fleetIDs)
             fleets = {
