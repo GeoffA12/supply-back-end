@@ -261,6 +261,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 # Parameter for vehicle id
                 elif 'vid' in paramsDict:
                     vids = set(paramsDict['vid'])
+                    print(vids)
+                    print(rows)
                     vehicles = [vehicle for vehicleID in vids for vehicle in rows if vehicleID in vehicle]
 
             print(fleetIDs)
