@@ -11,14 +11,17 @@ def getTup():
 
 
 def ver1():
-    whitelist = (1, 1, 1, 1, 1, 1, 1,)
-    return [i for e in whitelist for i in getTup() if e in i]
+    whitelist = (12345,)
+    return [i for e in whitelist for i in getTup() if e == i[0]]
 
 
 def ver2():
-    whitelist = set((1, 1, 1, 1, 1, 1, 1,))
-    return [i for e in whitelist for i in getTup() if e in i]
+    whitelist = set((12345,))
+    return [i for e in whitelist for i in getTup() if e == i[0]]
 
+
+print(ver1())
+print(ver2())
 
 print(timeit.timeit(ver1, number=1000))
 print(timeit.timeit(ver2, number=1000))
