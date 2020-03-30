@@ -12,7 +12,8 @@ from utils.vehicleutils import getRoute, getEta
 from utils.serverutils import connectToSQLDB
 from copy import deepcopy
 # from datetime import datetime
-
+import urllib.parse as urlparser
+from urllib.parse import parse_qs
 
 # def connectToSQLDB():
 #     return sqldb.connect(user = 'root', password = 'password', database = 'team22supply', port = 6022)
@@ -203,18 +204,22 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         path = self.path
         print(path)
         status = 404
-    
-        hasParams = '?' in path
-        if hasParams:
-            paramsOnlyString = path.split('/')[-1].strip('?')
-            print(paramsOnlyString)
-            paramsAsArray = paramsOnlyString.split('&')
-            paramKeys = [x.split('=')[0] for x in paramsAsArray]
-            print(paramKeys)
-            if len(paramKeys) != len(set(paramKeys)):
-                raise ValueError("You cannot parameterise duplicate parameters!")
-            paramVals = [x.split('=')[1] for x in paramsAsArray]
-            paramDict = dict(zip(paramKeys, paramVals))
+        parsedPath = urlparser.urlparse(path)
+        print(parsedPath)
+        paramsDict = parse_qs(parsedPath.query)
+        print(paramsDict)
+        hasParams = len(paramsDict) != 0
+        print(hasParams)
+#        if hasParams:
+#            paramsOnlyString = path.split('/')[-1].strip('?')
+#            print(paramsOnlyString)
+#            paramsAsArray = paramsOnlyString.split('&')
+#            paramKeys = [x.split('=')[0] for x in paramsAsArray]
+#            print(paramKeys)
+#            if len(paramKeys) != len(set(paramKeys)):
+#                raise ValueError("You cannot parameterise duplicate parameters!")
+#            paramVals = [x.split('=')[1] for x in paramsAsArray]
+#            paramDict = dict(zip(paramKeys, paramVals))
     
         sqlConnection = connectToSQLDB()
         cursor = sqlConnection.cursor()
@@ -230,19 +235,25 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             # print(vehicles)
             if hasParams:
                 # Parameter for fleet master
-                if 'user' in paramKeys:
-                    user = paramDict['user']
-                    if 'emailExt' in paramDict:
-                        user += f'@{paramDict["emailExt"]}'
-                    print(user)
+                if 'user' in paramsDict:
+                    users = paramsDict['user']
+
+                    usersCopy = deepcopy(users)
+                    users = [(x, x) for x in usersCopy]
+                    print(users)
                     statement = '''SELECT fleets.fleetid
                                 FROM fleets, fleetmanagers
                                 WHERE fleets.fmid = fleetmanagers.fmid
                                 AND (fleetmanagers.username = %s
                                 OR fleetmanagers.email = %s)'''
-
-                    cursor.execute(statement, (user, user,))
-                    fleetIDs = cursor.fetchall()
+                    fleetIDs = []
+                    for user in users:
+                        cursor.execute(statement, user)
+                        temp = cursor.fetchall()
+                        flatten = [item for sublist in temp for item in sublist]
+                        print(flatten)
+                        fleetIDs.extend(flatten)
+                        print(fleetIDs)
                     print(fleetIDs)
                     # if not fleetIDs:
                     #     statement = '''SELECT fleets.fleetid
@@ -251,15 +262,15 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     #     cursor.execute(statement, (user, user,))
                     #     fleetIDs = cursor.fetchall()
                     # print(ids)
-                    fleetIDSet = set([x[0] for x in fleetIDs])
-                    print(fleetIDSet)
-                    fleetIDs = list(fleetIDSet)
+                    # fleetIDSet = set([x[0] for x in fleetIDs])
+                    # print(fleetIDSet)
+                    # fleetIDs = list(fleetIDSet)
                     # Filtering out all the vehicles whose fleetids are not associated to our fleet master
-                    vehicles = [vehicle for fleetID in fleetIDSet for vehicle in rows if fleetID in vehicle]
+                    vehicles = [vehicle for fleetID in fleetIDs for vehicle in rows if fleetID in vehicle]
         
                 # Parameter for order id
-                elif 'oid' in paramKeys:
-                    oid = paramDict['oid']
+                elif 'oid' in paramsDict:
+                    oid = paramsDict['oid']
                     statement = '''SELECT vehicles.*
                                 FROM dispatch, vehicles
                                 WHERE vehicles.vid = dispatch.vid
@@ -269,8 +280,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     vehicles = cursor.fetchone()
 
                 # Parameter for vehicle id
-                elif 'vid' in paramKeys:
-                    vid = int(paramDict['vid'])
+                elif 'vid' in paramsDict:
+                    vid = int(paramsDict['vid'])
                     vehicles = [x for x in rows if vid in x]
 
             print(fleetIDs)
