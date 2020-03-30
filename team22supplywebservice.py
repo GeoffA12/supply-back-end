@@ -237,8 +237,9 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     print(user)
                     statement = '''SELECT fleets.fleetid
                                 FROM fleets, fleetmanagers
-                                WHERE fleetmanagers.username = %s
-                                OR fleetmanagers.email = %s'''
+                                WHERE fleets.fmid = fleetmanagers.fmid
+                                AND (fleetmanagers.username = %s
+                                OR fleetmanagers.email = %s)'''
 
                     cursor.execute(statement, (user, user,))
                     fleetIDs = cursor.fetchall()
