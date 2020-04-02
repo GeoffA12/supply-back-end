@@ -1,5 +1,6 @@
 *.DS_Store
-*/.ideas
-*/__pycache__
+.ideas/
+__pycache__/
+Experimenting/
 *.xml
 *.pyc
