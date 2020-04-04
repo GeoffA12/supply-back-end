@@ -416,14 +416,18 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
         # TODO: Need to change response body
         elif '/getDispatch' in path:
-            vid = (paramsDict['vid'],)
-            print(vid)
+            vids = paramsDict['vid']
+            print(vids)
+    
+            vidsCopy = deepcopy(vids)
+            vids = [(x,) for x in vidsCopy]
+            print(vids)
             statement = '''SELECT did, orderid, custid, end_lat, end_lon,
                         type, start_time, status
                         FROM dispatch WHERE vid = %s'''
             print(statement)
             cursor = sqlConnection.cursor()
-            cursor.execute(statement, vid)
+            cursor.executemany(statement, vids)
             dispatchTup = cursor.fetchall()
             cursor.close()
             print('tup:', dispatchTup)
