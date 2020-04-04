@@ -168,7 +168,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             '''
             [{'vehicleid': '8'}, {'vehicleid': '4'}, {'vehicleid': '1'}, {'vehicleid': '6'},]
             '''
-            data = [vid for viddict in postBody for vid in viddict.values]
+            data = [(vid,) for viddict in postBody for vid in viddict.values()]
 
             print(data)
             statement = 'DELETE FROM vehicles WHERE vid = %s'
