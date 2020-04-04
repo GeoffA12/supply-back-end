@@ -418,22 +418,23 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         elif '/getDispatch' in path:
             vids = paramsDict['vid']
             print(vids)
-    
+
             vidsCopy = deepcopy(vids)
             vids = [(x,) for x in vidsCopy]
             print(vids)
-            statement = '''SELECT did, orderid, custid, end_lat, end_lon,
-                        type, start_time, status
-                        FROM dispatch WHERE vid = %s'''
+            statement = '''SELECT * FROM dispatch WHERE vid = %s'''
             print(statement)
-            cursor = sqlConnection.cursor()
-            cursor.executemany(statement, vids)
-            dispatchTup = cursor.fetchall()
-            cursor.close()
-            print('tup:', dispatchTup)
+            dispatches = []
+            for vid in vids:
+                cursor = sqlConnection.cursor()
+                cursor.execute(statement, vid)
+                dispatchTup = cursor.fetchall()
+                print('tup:', dispatchTup)
+                dispatches.extend(dispatchTup)
+
+            print(dispatches)
             dispatchListCopy = [list(x) for x in dispatchTup]
             print('List: ', dispatchListCopy)
-
 
             latlons = [(x[3], x[4]) for x in dispatchListCopy]
             dispatchList = [x[0:3] + x[5:] for x in dispatchListCopy]
