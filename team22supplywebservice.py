@@ -162,18 +162,52 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             cursor.executemany(statement, data)
             sqlConnection.commit()
 
-        # TODO Needs to accommodate new post body format
         elif '/removeVehicle' in path:
             status = 200
-            del postBody['fleetNum']
             print(postBody)
-    
-            statement = 'DELETE FROM vehicles WHERE vid = %s'
-            data = [(x,) for x in postBody.values()]
+            '''
+            [{'vehicleid': '8'}, {'vehicleid': '4'}, {'vehicleid': '1'}, {'vehicleid': '6'},]
+            '''
+            data = [vid for viddict in postBody for vid in viddict.values]
+
             print(data)
+            statement = 'DELETE FROM vehicles WHERE vid = %s'
             cursor.executemany(statement, data)
             sqlConnection.commit()
+
+        elif '/updateVehicle' in path:
+            print()
+            '''
+            Things that I will allow updating of the vehicle
+            status
+            licenseplate
+            fleetid
+            make (?)
+            model (?)
+            current_lat
+            current_lon
+            last_heartbeat
             
+            Precondition(s):
+            postBody must contain the key
+            'vid' with a value of a vehicle that exists in the db
+            and
+            at least one more key named the same way as the above mentioned allowed update attributes
+            Expected incoming format
+            [{
+                'vid': 1,
+                'status': 1,
+                }, {
+                'vid': 4,
+                'status': 2,
+                }, {
+                'vid': 2,
+                'status': 1,
+                'last_heartbeat': '12:41:13.513'
+                }, ]
+            
+            '''
+
         elif '/addFleet' in path:
             status = 200
             print(postBody)
