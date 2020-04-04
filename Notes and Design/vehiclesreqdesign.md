@@ -11,60 +11,71 @@
 |HEAD       |/vehicles    |EXISTS             |No
 
 ## Resources
-| Parameter | Semantics  |
-|:---       |:---        |
-|oid        |Order ID    |
-|vin        |Vehicle IdN |
+| Parameter | Semantics     |
+|:---       |:---           |
+|oid        |Order ID       |
+|vid        |Vehicle ID     |
+|user       |Fleet master   |
 
-### By Order ID
+
+### By Order ID ![Generic badge](https://img.shields.io/badge/status-Unstable-red.svg)
 **API Call:**\
-http://team22.supply.softwareengineeringii.com/api/backend/0.0/vehicles?oid={order id}&appid={your api key}\
+http://team22.supply.softwareengineeringii.com/vehiclesRequest/?oid={order id}
 **Example API Call:**\
-http://team22.supply.softwareengineeringii.com/api/backend/0.0/vehicles?oid=123
+http://team22.supply.softwareengineeringii.com/vehiclesRequest/?oid={12}
 
-### By Vehicle Identification Number
+
+### By Vehicle ID ![Generic badge](https://img.shields.io/badge/status-Stable-green.svg)
 **API Call:**\
-http://team22.supply.softwareengineeringii.com/api/backend/0.0/vehicles?vin={order id}&appid={your api key}\
+http://team22.supply.softwareengineeringii.com/vehiclesRequest/?vid={vehicle id}
 **Example API Call:**\
-http://team22.supply.softwareengineeringii.com/api/backend/0.0/vehicles?vin=1WUYDCJE9FN072354
+http://team22.supply.softwareengineeringii.com/vehiclesRequest/?vid=30
 
-## Scenarios and Pseudocode of logic (Potential Test Cases!)
+### By Fleet Master ![Generic badge](https://img.shields.io/badge/status-Stable-green.svg)
+**API Call:**\
+http://team22.supply.softwareengineeringii.com/vehiclesRequest/?user={fleet master email}
+**Example API Call:**\
+http://team22.supply.softwareengineeringii.com/vehiclesRequest/?user='komoto415@gmail.com'
+
+### By Fleet Number ![Generic badge](https://img.shields.io/badge/status-Unstable-red.svg)
+**API Call:**\
+http://team22.supply.softwareengineeringii.com/vehiclesRequest/?user={fleet master email}
+**Example API Call:**\
+http://team22.supply.softwareengineeringii.com/vehiclesRequest/?user='komoto415@gmail.com'
+
+## Scenarios
 **Generic GET Response**
 This is a generic response of a get method to our API given that our client doesn't 
 ```
 method: GET
-URI: http://team22.supply.softwareengineeringii.com/api/backend/0.0/vehicles
+URI: http://team22.supply.softwareengineeringii.com/vehicleRequest
 [
     {
-        "vid" : 12345,
-        "serviceType" : DryCleaning,
-        "vehicleMake" : "Toyota",
-        "liscencePlate" : "QW3456",
-        "status" : Delivering,
-        "location" : {
-            "lon" : 23.42,
-            "lat" : 42.12,
-        },
-        "destination" : {
-            "address1" : "3001 S Congress Ave",
-            "address2" : "St. Andres RM222D"
-        }
+        "vehicleid": 38,
+        "status": "inactive",
+        "licenseplate": "MP4891",
+        "fleetid": 5,
+        "make": "Toyota",
+        "model": "V-9",
+        "current_lat": 30.2264,
+        "current_lon": 97.7553,
+        "last_heartbeat": null,
+        "date_added": "2020-04-03T00:00:00"
     },
     {
-        "vid" : 98765,
-        "serviceType" : PartyPlanner,
-        "vehicleMake" : "Tesla",
-        "liscencePlate" : "TE1241",
-        "status" : Delivered,
-        "location" : {
-            "lon" : 45.12,
-            "lat" : 10.31,
-        },
-        "destination" : {
-            "address1" : "",
-            "address2" : ""
-        }
-    },...,{nth vehicle data}
+        "vehicleid": 39,
+        "status": "inactive",
+        "licenseplate": "a",
+        "fleetid": 1,
+        "make": "a",
+        "model": "a",
+        "current_lat": 30.2264,
+        "current_lon": 97.7553,
+        "last_heartbeat": null,
+        "date_added": "2020-04-03T23:06:35"
+    }, ... , {
+        n-th vehicle entry
+    },
 ]
 ```
 
@@ -74,20 +85,20 @@ I the API am expecting an order.json from the DemandBE
 I will respond to the DemandBE with confirmation of the order and that fulfillment has begun
 ```
 method: POST 
-URI: http://team22.supply.softwareengineeringii.com/api/backend/0.0/vehicles
+URI: http://team22.supply.softwareengineeringii.com/vehicleRequest
 Content-Type: application/json;
 
 # Body as a JSON
-# What I, the API, am receiving
+# What I, the API, want to reviece as far as formatting is concerned
 {
-    "serviceType" : DryCleaning",  # Could probably be an ENUM
-    "cusomterID : 19821
-    "orderID" : 123,
-    "location" : {
-        "lon" : 45.12,
-        "lat" : 124.22
-    },
-    "timeOrderMade" : 12:02:34    # should be type DateTime
+    'serviceType': 'DRYCLEANING',
+    'custid': 1234567,
+    'orderid': 1234,
+    'destination': {
+        'lat': 123,
+        'lon': 123
+        },
+    'timeOrderMade': '2018-03-29T13:34:00.000'
 }
 
 # Some logic about deciding which vehicle gets selected. Vehicle gets selected
@@ -104,19 +115,7 @@ isVehicleAvailable
 # I will now responde to the DemandDB with:
 200 HTTPS Status
 {
-    "vid" : 12345,
-    "serviceType" : DryCleaning,
-    "vehicleMake" : "Toyota",
-    "liscencePlate" : "QW3456",
-    "status" : Delivering,
-    "location" : {
-        "lon" : 23.42,
-        "lat" : 42.12,
-    },
-    "destination" : {
-        "address1" : "3001 S Congress Ave",
-        "address2" : "St. Andres RM222D"
-    }
+
 }
 ```
 

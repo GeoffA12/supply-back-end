@@ -205,7 +205,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 'status': 1,
                 'last_heartbeat': '12:41:13.513'
                 }, ]
-            
             '''
 
         elif '/addFleet' in path:
