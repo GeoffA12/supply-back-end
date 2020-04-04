@@ -20,7 +20,10 @@ from urllib.parse import parse_qs
 
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
-    ver = '0.4.1'
+    ver = '0.4.2'
+    '''
+    SendGrid API Key: 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
+    '''
     
     # How to convert the body from a string to a dictionary
     # use 'loads' to convert from byte/string to a dictionary!
@@ -28,7 +31,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         length = int(self.headers['content-length'])
         body = self.rfile.read(length)
         return json.loads(body)
-
+    
     '''
     data I want or am expecting
     postBody = {
@@ -243,18 +246,50 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         print(paramsDict)
         hasParams = len(paramsDict) != 0
         print(hasParams)
-    
+
         sqlConnection = connectToSQLDB()
         cursor = sqlConnection.cursor()
         responseBody = {}
-    
+
+        '''
+        Vehicle Request Resource Handler
+        As a generic GET request, our handler will return all vehicles that exists in our database formatted like so:
+            [
+                {
+                    "vehicleid": 28,
+                    "status": "active",
+                    "licenseplate": "123456",
+                    "fleetid": 5,
+                    "make": "Toyota",
+                    "model": "V-9",
+                    "current_lat": 30.2264,
+                    "current_lon": 97.7553,
+                    "last_heartbeat": null,
+                    "date_added": "2018-03-29T13:34:00"
+                },
+                {
+                    "vehicleid": 30,
+                    "status": "active",
+                    "licenseplate": "VA4891",
+                    "fleetid": 5,
+                    "make": "Toyota",
+                    "model": "V-9",
+                    "current_lat": 30.2264,
+                    "current_lon": 97.7553,
+                    "last_heartbeat": null,
+                    "date_added": "2018-03-29T00:00:00"
+                }, .. , {n-th vehicle}
+            ]
+            
+        The addition of parameters will be a filtering process
+        '''
         if '/vehicleRequest' in path:
             statement = 'SELECT * FROM vehicles'
             cursor.execute(statement)
             rows = cursor.fetchall()
             vehicles = [list(x) for x in rows]
             fleetIDs = list(set([x[3] for x in vehicles]))
-
+    
             # print(vehicles)
             if hasParams:
                 # Parameter for fleet master
@@ -381,7 +416,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
         # TODO: Need to change response body
         elif '/getDispatch' in path:
-            vid = (paramDict['vid'],)
+            vid = (paramsDict['vid'],)
             print(vid)
             statement = '''SELECT did, orderid, custid, end_lat, end_lon,
                         type, start_time, status
@@ -417,12 +452,12 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     if col == 'timeOrderCreated':
                         e = e.isoformat().replace('T', ' ')
                     dispatches[key][col] = e
-
+    
             responseBody = dispatches
             print(responseBody)
             status = 200
-            for k, v in responseBody.items():
-                print(k, v)
+            # for k, v in responseBody.items():
+            #     print(k, v)
     
         cursor.close()
         sqlConnection.close()
