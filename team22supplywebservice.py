@@ -414,7 +414,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             print(responseBody)
             status = 200
 
-        # TODO: Need to change response body
         elif '/getDispatch' in path:
             vids = paramsDict['vid']
             print(vids)
@@ -428,16 +427,16 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             for vid in vids:
                 cursor = sqlConnection.cursor()
                 cursor.execute(statement, vid)
-                dispatchTup = cursor.fetchall()
-                # print('tup:', dispatchTup)
-                dispatches.extend(list(dispatchTup))
+                dispatchTup = cursor.fetchone()
+                print('tup:', dispatchTup)
+                dispatches.append(list(dispatchTup))
 
             print(dispatches)
             dispatchesCopy = deepcopy(dispatches)
 
             dispatches = []
             for dispatch in dispatchesCopy:
-                startLat, startLon = dispatch.pop(4), dispatch.pop(5)
+                startLat, startLon = dispatch.pop(4), dispatch.pop(4)
                 startHuman = 'St. Edward\'s University'
                 startDict = {
                     'humanReadable': startHuman,
@@ -445,7 +444,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     'lon': float(startLon)
                     }
     
-                endLat, endLon = dispatch.pop(6), dispatch.pop(7)
+                endLat, endLon = dispatch.pop(4), dispatch.pop(4)
                 endHuman = '1234 That Street Ave'
                 endDict = {
                     'humanReadable': endHuman,
