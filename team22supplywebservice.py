@@ -429,41 +429,55 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 cursor = sqlConnection.cursor()
                 cursor.execute(statement, vid)
                 dispatchTup = cursor.fetchall()
-                print('tup:', dispatchTup)
-                dispatches.extend(dispatchTup)
+                # print('tup:', dispatchTup)
+                dispatches.extend(list(dispatchTup))
 
             print(dispatches)
-            dispatchListCopy = [list(x) for x in dispatchTup]
-            print('List: ', dispatchListCopy)
+            dispatchesCopy = deepcopy(dispatches)
 
-            latlons = [(x[3], x[4]) for x in dispatchListCopy]
-            dispatchList = [x[0:3] + x[5:] for x in dispatchListCopy]
-
-            # eventually, none will ne a function that takes in a lat lon tup and translate into address
-            revGeos = [None for x in latlons]
-            for dispatch, address in zip(dispatchList, revGeos):
-                dispatch.insert(3, address)
-
-            dispatchCols = ['orderid', 'customerid', 'destination', 'serviceType',
-                           'timeOrderCreated', 'status']
-            dids = [x[0] for x in dispatchList]
-            attr = [x[1:] for x in dispatchList]
-
-            dispatches = {}
-            for did, attribute, in zip(dids, attr):
-                key = f'DispatchID{did}'
-                dispatches[key] = {}
-                for col, e in zip(dispatchCols, attribute):
-                    if col == 'timeOrderCreated':
-                        e = e.isoformat().replace('T', ' ')
-                    dispatches[key][col] = e
+            dispatches = []
+            for dispatch in dispatchesCopy:
+                startLat, startLon = dispatch.pop(4), dispatch.pop(5)
+                startHuman = 'St. Edward\'s University'
+                startDict = {
+                    'humanReadable': startHuman,
+                    'lat': float(startLat),
+                    'lon': float(startLon)
+                    }
     
-            responseBody = dispatches
-            print(responseBody)
+                endLat, endLon = dispatch.pop(6), dispatch.pop(7)
+                endHuman = '1234 That Street Ave'
+                endDict = {
+                    'humanReadable': endHuman,
+                    'lat': float(endLat),
+                    'lon': float(endLon)
+                    }
+                dispatch.insert(4, startDict)
+                dispatch.insert(5, endDict)
+                dispatches.append(dispatch)
+
+            print(dispatches)
+
+            dispatchColsNames = ['did', 'vid', 'custid', 'orderid',
+                                 'startLocation', 'endLocation',
+                                 'start_time', 'status', 'serviceType']
+
+            dispatchDictList = []
+            for dispatch in dispatches:
+                dispatchDict = {}
+                for colName, colVal in zip(dispatchColsNames, dispatch):
+                    if colName == 'start_time':
+                        colVal = colVal.isoformat()
+                    dispatchDict[colName] = colVal
+                dispatchDictList.append(dispatchDict)
+
+            responseBody = dispatchDictList
+            # print(responseBody)
             status = 200
-            # for k, v in responseBody.items():
-            #     print(k, v)
-    
+            for dispatch in responseBody:
+                for k, v in dispatch.items():
+                    print(k, v)
+
         cursor.close()
         sqlConnection.close()
         self.send_response(status)
