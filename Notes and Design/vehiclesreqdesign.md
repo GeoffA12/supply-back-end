@@ -11,7 +11,7 @@
 |HEAD       |/vehicles    |EXISTS             |No
 
 ## Read Supported Resources
-TO BE REFACTORED\
+TO BE REFACTORED  
 URI: `/vehicleRequest`
 
 | Parameter | Semantics     |
@@ -23,35 +23,35 @@ URI: `/vehicleRequest`
 
 
 ### By Order ID ![Generic badge](https://img.shields.io/badge/status-Unstable-red.svg)
-**API Call:**\
-http://team22.supply.softwareengineeringii.com/supply/vehicles?oid={order id}\
-**Example API Call:**\
-http://team22.supply.softwareengineeringii.com/supply/vehicles?oid=12
+**API Call:**  
+https://supply.team22.softwareengineeringii.com/supply/vehicles?oid={order id}  
+**Example API Call:**  
+https://supply.team22.softwareengineeringii.com/supply/vehicles?oid=12
 
 ### By Vehicle ID ![Generic badge](https://img.shields.io/badge/status-Stable-green.svg)
-**API Call:**\
-http://team22.supply.softwareengineeringii.com/supply/vehicles?vid={vehicle id}\
-**Example API Call:**\
-http://team22.supply.softwareengineeringii.com/supply/vehicles?vid=30
+**API Call:**  
+https://supply.team22.softwareengineeringii.com/supply/vehicles?vid={vehicle id}  
+**Example API Call:**  
+https://supply.team22.softwareengineeringii.com/supply/vehicles?vid=30
 
 ### By Fleet Master ![Generic badge](https://img.shields.io/badge/status-Stable-green.svg)
-**API Call:**\
-http://team22.supply.softwareengineeringii.com/supply/vehicles?user={fleet master email}\
-**Example API Call:**\
-http://team22.supply.softwareengineeringii.com/supply/vehicles?user=komoto415%40gmail.com
+**API Call:**  
+https://supply.team22.softwareengineeringii.com/supply/vehicles?user={fleet master email}  
+**Example API Call:**  
+https://supply.team22.softwareengineeringii.com/supply/vehicles?user=komoto415%40gmail.com
 
 ### By Fleet ID ![Generic badge](https://img.shields.io/badge/status-Broken-red.svg)
-**API Call:**\
-http://team22.supply.softwareengineeringii.com/supply/vehicles?fid={fleet id}\
-**Example API Call:**\
-http://team22.supply.softwareengineeringii.com/supply/vehicles?fid=8
+**API Call:**  
+https://supply.team22.softwareengineeringii.com/supply/vehicles?fid={fleet id}  
+**Example API Call:**  
+https://supply.team22.softwareengineeringii.com/supply/vehicles?fid=8
 
 ## Scenarios
 **Generic GET Response**
 This is a generic response of a get method to our API given that our client doesn't 
 ```
 method: GET
-URI: http://team22.supply.softwareengineeringii.com/supply/vehicles
+URI: https://supply.team22.softwareengineeringii.com/supply/vehicles
 [
     {
         "vehicleid": 38,
@@ -81,11 +81,11 @@ URI: http://team22.supply.softwareengineeringii.com/supply/vehicles
     },
 ]
 ```
-**Scenario:**\
+**Scenario:**  
 The fleet manager wants to see what vehicle is fulfilling order 123
 ```
 method: GET 
-URI: http://team22.supply.softwareengineeringii.com/supply/vehicles?oid=123
+URI: https://supply.team22.softwareengineeringii.com/supply/vehicles?oid=123
 
 if there is a dispatch that has the order id 123 and is either running or queued
 HTTP Status: 200
@@ -120,7 +120,8 @@ HTTP Status: 404
 |[/supply/vehicles/rem](#vrem)      |Remove a vehicle
 |[/supply/vehicles/upd](#vupd)      |Update a vehicle
 
-### <a id="vreq"></a> Vehicle Request
+<a id="vreq"></a> 
+###Vehicle Request
 Keys Value Constraints of the post body ***case sensitive**:
 
 |Key            |Value Type
@@ -179,13 +180,13 @@ postBody = {
     'timeOrderMade': '2018-03-29T13:34:00.000'
 }
 ```
-**Scenario:**\
+**Scenario:**  
 Customer submits an order request
 I the API am expecting an order.json from the DemandBE
 I will respond to the DemandBE with confirmation of the order and that fulfillment has begun
 ```
 method: POST 
-URI: http://team22.supply.softwareengineeringii.com/vehicles/req
+URI: https://supply.team22.softwareengineeringii.com/vehicles/req
 Content-Type: application/json;
 
 # Body as a JSON
@@ -207,8 +208,6 @@ Content-Type: application/json;
 
 
 What I will be responding with as a json():
-
-
 {
     'vid': vid,
     'licensePlate': licensePlate,
@@ -223,20 +222,23 @@ What I will be responding with as a json():
 
 ```
 
-### <a id="vadd"><a/> Registering a Vehicle
+<a id="vadd"><a/>
+### Registering a Vehicle
 
-### <a id="vrem"><a/> Removing a Vehicle
+<a id="vrem"><a/>
+### Removing a Vehicle
 
-### <a id="vupd"><a/> Updating a Vehicle
+<a id="vupd"><a/>
+### Updating a Vehicle
 
-Need to revise\
-**Scenario 3:**\
+Need to revise  
+**Scenario 3:**  
 Our vehicle will periodically be sending its location and status. 
 Since our status is now fulfilled, destination would be null/empty string (whatever gets decided for empty
   cells, for now will represent with empty strings)
 ```
 method: PATCH 
-URI: http://team22.supply.softwareengineeringii.com/api/backend/0.0/vehicles?vid=12345
+URI: https://supply.team22.softwareengineeringii.com/api/backend/0.0/vehicles?vid=12345
 Content-Type: application/json
 
 I am the vehicle sending this JSON Body to the SupplyBE
