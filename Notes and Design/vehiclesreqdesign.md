@@ -113,12 +113,12 @@ HTTP Status: 404
 ```
 
 ## POST Supported Resources
-|URI                                |Semantics
-|:---                               |:---
-|[/supply/vehicles/req](#vreq)      |Request a vehicle (on order)
-|[/supply/vehicles/add](#vadd)      |Added a vehicle
-|[/supply/vehicles/rem](#vrem)      |Remove a vehicle
-|[/supply/vehicles/upd](#vupd)      |Update a vehicle
+|URI                    |Semantics
+|:---                   |:---
+|/supply/vehicles/req   |Request a vehicle (on order)
+|/supply/vehicles/add   |Added a vehicle
+|/supply/vehicles/rem   |Remove a vehicle
+|/supply/vehicles/upd   |Update a vehicle
 
 <a id="vreq"></a> 
 ###Vehicle Request
@@ -222,13 +222,10 @@ What I will be responding with as a json():
 
 ```
 
-<a id="vadd"><a/>
 ### Registering a Vehicle
 
-<a id="vrem"><a/>
 ### Removing a Vehicle
 
-<a id="vupd"><a/>
 ### Updating a Vehicle
 
 Need to revise  
