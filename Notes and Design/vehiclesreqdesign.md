@@ -10,45 +10,48 @@
 |DELETE     |/vehicles    |DELETE             |No
 |HEAD       |/vehicles    |EXISTS             |No
 
-## Resources
+## Read Supported Resources
+TO BE REFACTORED\
+URI: `/vehicleRequest`
+
 | Parameter | Semantics     |
 |:---       |:---           |
 |oid        |Order ID       |
 |vid        |Vehicle ID     |
 |user       |Fleet master   |
+|fid        |Fleet ID       |
 
 
 ### By Order ID ![Generic badge](https://img.shields.io/badge/status-Unstable-red.svg)
 **API Call:**\
-http://team22.supply.softwareengineeringii.com/vehiclesRequest/?oid={order id}
+http://team22.supply.softwareengineeringii.com/supply/vehicles?oid={order id}\
 **Example API Call:**\
-http://team22.supply.softwareengineeringii.com/vehiclesRequest/?oid={12}
-
+http://team22.supply.softwareengineeringii.com/supply/vehicles?oid=12
 
 ### By Vehicle ID ![Generic badge](https://img.shields.io/badge/status-Stable-green.svg)
 **API Call:**\
-http://team22.supply.softwareengineeringii.com/vehiclesRequest/?vid={vehicle id}
+http://team22.supply.softwareengineeringii.com/supply/vehicles?vid={vehicle id}\
 **Example API Call:**\
-http://team22.supply.softwareengineeringii.com/vehiclesRequest/?vid=30
+http://team22.supply.softwareengineeringii.com/supply/vehicles?vid=30
 
 ### By Fleet Master ![Generic badge](https://img.shields.io/badge/status-Stable-green.svg)
 **API Call:**\
-http://team22.supply.softwareengineeringii.com/vehiclesRequest/?user={fleet master email}
+http://team22.supply.softwareengineeringii.com/supply/vehicles?user={fleet master email}\
 **Example API Call:**\
-http://team22.supply.softwareengineeringii.com/vehiclesRequest/?user='komoto415@gmail.com'
+http://team22.supply.softwareengineeringii.com/supply/vehicles?user=komoto415%40gmail.com
 
-### By Fleet Number ![Generic badge](https://img.shields.io/badge/status-Unstable-red.svg)
+### By Fleet ID ![Generic badge](https://img.shields.io/badge/status-Broken-red.svg)
 **API Call:**\
-http://team22.supply.softwareengineeringii.com/vehiclesRequest/?user={fleet master email}
+http://team22.supply.softwareengineeringii.com/supply/vehicles?fid={fleet id}\
 **Example API Call:**\
-http://team22.supply.softwareengineeringii.com/vehiclesRequest/?user='komoto415@gmail.com'
+http://team22.supply.softwareengineeringii.com/supply/vehicles?fid=8
 
 ## Scenarios
 **Generic GET Response**
 This is a generic response of a get method to our API given that our client doesn't 
 ```
 method: GET
-URI: http://team22.supply.softwareengineeringii.com/vehicleRequest
+URI: http://team22.supply.softwareengineeringii.com/supply/vehicles
 [
     {
         "vehicleid": 38,
@@ -78,59 +81,14 @@ URI: http://team22.supply.softwareengineeringii.com/vehicleRequest
     },
 ]
 ```
-
-**Scenario 1:**\
-Customer submits an order request
-I the API am expecting an order.json from the DemandBE
-I will respond to the DemandBE with confirmation of the order and that fulfillment has begun
-```
-method: POST 
-URI: http://team22.supply.softwareengineeringii.com/vehicleRequest
-Content-Type: application/json;
-
-# Body as a JSON
-# What I, the API, want to reviece as far as formatting is concerned
-{
-    'serviceType': 'DRYCLEANING',
-    'custid': 1234567,
-    'orderid': 1234,
-    'destination': {
-        'lat': 123,
-        'lon': 123
-        },
-    'timeOrderMade': '2018-03-29T13:34:00.000'
-}
-
-# Some logic about deciding which vehicle gets selected. Vehicle gets selected
-# Dispatch created. Strip order.json for all relevant data used for dispatch
-    # Dispatch written to disaptchRecord table
-    # Get some sort of route from mapping service
-    # Car begins route (not really logic that happens here, just what probably happens next)
-
-What I am expecting in my response (at the very least):
-dest address
-vehicle location
-serviceType
-isVehicleAvailable 
-# I will now responde to the DemandDB with:
-200 HTTPS Status
-{
-
-}
-```
-
-**Scenario 2:**\
+**Scenario:**\
 The fleet manager wants to see what vehicle is fulfilling order 123
 ```
 method: GET 
-URI: http://team22.supply.softwareengineeringii.com/api/backend/0.0/vehicles?oid=123
-No body associate with GET method. Just queries
+URI: http://team22.supply.softwareengineeringii.com/supply/vehicles?oid=123
 
-Should be very similar, if not the exact same as the POST's response to the DemandBE.
-However, depending how many parameters we might want to allow, it may restrict and/or append more data to our response.
-
-# My response:
-Expected HTTP Status: 200
+if there is a dispatch that has the order id 123 and is either running or queued
+HTTP Status: 200
 {
     "vid" : 12345,
     "serviceType" : DryCleaning,
@@ -146,8 +104,132 @@ Expected HTTP Status: 200
         "address2" : "St. Andres RM222D"
     }
 }
+
+else:
+HTTP Status: 404
+{
+    'failed': f'No running dispatch with order id {oid}'
+}
 ```
 
+## POST Supported Resources
+|URI                                |Semantics
+|:---                               |:---
+|[/supply/vehicles/req](#vreq)      |Request a vehicle (on order)
+|[/supply/vehicles/add](#vadd)      |Added a vehicle
+|[/supply/vehicles/rem](#vrem)      |Remove a vehicle
+|[/supply/vehicles/upd](#vupd)      |Update a vehicle
+
+### <a id="vreq"></a> Vehicle Request
+Keys Value Constraints of the post body ***case sensitive**:
+
+|Key            |Value Type
+|:---           |:---
+|serviceType*   |String
+|custid         |Integer
+|orderid        |Integer
+|destination*   |Dictionary
+|timeOrderMade  |String
+
+#### *Notes for Key Value Constraints
+##### serviceType:
+The value of said string will be derived from ServiceType enumerated type name attribute. Provided in the ServiceType
+ enum is a translate method that will check only casings and translate into the appropriate enum. Failure of
+  translation may be indicative of the fact that we do no provide whatever the service you are trying to enumerate.
+ 
+Example: 
+```python
+st = 'DrYcLeaning'
+serviceTypeEnum = ServiceType.translate(st)
+print(serviceTypeEnum)    
+print(serviceTypeEnum.name)
+``` 
+Output:
+```
+ServiceType.DRYCLEANING
+DRYCLEANING
+```
+
+##### destination
+Keys Value Constraints of the destination key's value ***case sensitive**:
+
+|Key    |Value Type
+|:---   |:---
+|lat    |Float
+|lon    |Float
+
+Example of acceptable destination key value:
+```python
+postBody['destination'] = {
+    'lat': 12.521,
+    'lon': 35.413
+}
+```
+
+#### Example acceptable postBody
+```python
+postBody = {
+    'serviceType': 'DRYCLEANING',
+    'custid': 1234567,
+    'orderid': 1234,
+    'destination': {
+        'lat': 12.521,
+        'lon': 35.413
+        },
+    'timeOrderMade': '2018-03-29T13:34:00.000'
+}
+```
+**Scenario:**\
+Customer submits an order request
+I the API am expecting an order.json from the DemandBE
+I will respond to the DemandBE with confirmation of the order and that fulfillment has begun
+```
+method: POST 
+URI: http://team22.supply.softwareengineeringii.com/vehicles/req
+Content-Type: application/json;
+
+# Body as a JSON
+# What I, the API, want to reviece as far as formatting is concerned
+{
+    'serviceType': 'DRYCLEANING',
+    'custid': 1234567,
+    'orderid': 1234,
+    'destination': {
+        'lat': 12.521,
+        'lon': 35.413
+        },
+    'timeOrderMade': '2018-03-29T13:34:00.000'
+}
+
+# Some logic about deciding which vehicle gets selected
+# Dispatch written to disaptchRecord table
+# Get some sort of route from mapping service
+
+
+What I will be responding with as a json():
+
+
+{
+    'vid': vid,
+    'licensePlate': licensePlate,
+    'make': make,
+    'model': model,
+    'curLocation': {
+        'lat': vLat,
+        'lon': vLon
+        },
+    'eta': eta
+}
+
+```
+
+### <a id="vadd"><a/> Registering a Vehicle
+
+### <a id="vrem"><a/> Removing a Vehicle
+
+### <a id="vupd"><a/> Updating a Vehicle
+
+Need to revise\
 **Scenario 3:**\
 Our vehicle will periodically be sending its location and status. 
 Since our status is now fulfilled, destination would be null/empty string (whatever gets decided for empty
