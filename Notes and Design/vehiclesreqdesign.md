@@ -120,8 +120,7 @@ HTTP Status: 404
 |/supply/vehicles/rem   |Remove a vehicle
 |/supply/vehicles/upd   |Update a vehicle
 
-<a id="vreq"></a> 
-###Vehicle Request
+### Vehicle Request
 Keys Value Constraints of the post body ***case sensitive**:
 
 |Key            |Value Type
