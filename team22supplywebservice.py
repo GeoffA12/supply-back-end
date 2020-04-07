@@ -426,8 +426,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
             print(dispatches)
 
-            dispatchColsNames = ['did', 'vid', 'custid', 'orderid', ~
-            'startLocation', 'endLocation',
+            dispatchColsNames = ['did', 'vid', 'custid', 'orderid',
+                                 'startLocation', 'endLocation',
                                  'start_time', 'status', 'serviceType']
 
             dispatchDictList = []
