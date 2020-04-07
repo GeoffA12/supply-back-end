@@ -161,6 +161,17 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             cursor.executemany(statement, data)
             sqlConnection.commit()
 
+            fleetid = postBody[0]['fleetid']
+            statement = '''SELECT email FROM fleetmanagers, fleets
+                        WHERE fleetmanagers.fleetid = fleets.fleetid
+                        AND email = %s'''
+            cursor.execute(statement, (fleetid,))
+            email = cursor.fetchone()[0]
+
+            subject = f'Vehicle Adding Successful'
+            body = f'Vehicle {"has been" if postBody == 1 else "s were"} added to the database'
+            notifications(recipients=email, subject=subject, body=body)
+
         elif '/removeVehicle' in path:
             status = 200
             print(postBody)
@@ -175,18 +186,24 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             sqlConnection.commit()
 
         elif '/updateVehicle' in path:
-            print()
+            allowableUpdates = {'status', 'licenseplate', 'fleetid', 'current_lat', 'current_lon', 'last_heartbeat'}
+            print(postBody)
+            status = 401
+    
+            vidless = deepcopy(postBody)
+            del vidless['vid']
+    
+            if 'vid' in postBody and set(vidless.keys()).issubset(allowableUpdates):
+                data = (postBody['vid'],)
+                statement = 'SELECT * FROM vehicles WHERE vid = %s'
+                cursor.execute(statement, data)
+                entry = cursor.fetchone()[0]
+                if entry is not None:
+                    status = 200
+                    'Now we can start checking for what we\'re updating'
+                    statement = 'UPDATE vehicles SET '
+    
             '''
-            Things that I will allow updating of the vehicle
-            status
-            licenseplate
-            fleetid
-            make (?)
-            model (?)
-            current_lat
-            current_lon
-            last_heartbeat
-            
             Precondition(s):
             postBody must contain the key
             'vid' with a value of a vehicle that exists in the db
