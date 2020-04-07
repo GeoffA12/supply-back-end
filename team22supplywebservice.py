@@ -162,9 +162,10 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             sqlConnection.commit()
 
             fleetid = postBody[0]['fleetid']
+            print(fleetid)
             statement = '''SELECT email FROM fleetmanagers, fleets
                         WHERE fleetmanagers.fmid = fleets.fmid
-                        AND email = %s'''
+                        AND fleetid = %s'''
             cursor.execute(statement, (fleetid,))
             email = cursor.fetchone()[0]
 
