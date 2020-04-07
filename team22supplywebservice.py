@@ -429,7 +429,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 cursor.execute(statement, vid)
                 dispatchTup = cursor.fetchone()
                 print('tup:', dispatchTup)
-                dispatches.append(list(dispatchTup))
+                if dispatchTup is not None:
+                    dispatches.append(list(dispatchTup))
 
             print(dispatches)
             dispatchesCopy = deepcopy(dispatches)
