@@ -163,7 +163,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
             fleetid = postBody[0]['fleetid']
             statement = '''SELECT email FROM fleetmanagers, fleets
-                        WHERE fleetmanagers.fleetid = fleets.fleetid
+                        WHERE fleetmanagers.fmid = fleets.fmid
                         AND email = %s'''
             cursor.execute(statement, (fleetid,))
             email = cursor.fetchone()[0]
