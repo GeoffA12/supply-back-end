@@ -1,26 +1,22 @@
-
 import http.server
-from http.server import BaseHTTPRequestHandler
 import json
-import mysql.connector as sqldb
-import requests
-from dispatch import Dispatch
-from enums.servicetype import ServiceType
-from enums.vehiclestatus import VehicleStatus
-from enums.dispatchstatus import DispatchStatus
-from utils.vehicleutils import getRoute, getEta
-from utils.serverutils import connectToSQLDB
-from copy import deepcopy
-# from datetime import datetime
+import threading
+import time
 import urllib.parse as urlparser
+from copy import deepcopy
+from datetime import datetime, timedelta
+from http.server import BaseHTTPRequestHandler
 from urllib.parse import parse_qs
 
-# def connectToSQLDB():
-#     return sqldb.connect(user = 'root', password = 'password', database = 'team22supply', port = 6022)
+from dispatch import Dispatch
+from enums.dispatchstatus import DispatchStatus
+from enums.servicetype import ServiceType
+from utils.serverutils import connectToSQLDB, notifications
+from utils.vehicleutils import getEta
 
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
-    ver = '0.4.2'
+    ver = '0.5.0'
     '''
     SendGrid API Key: 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
     '''
@@ -139,7 +135,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             print(eta)
             
             vehicleDict['ETA'] = eta
-    
+
             status = 200
             responseBody = vehicleDict
         
@@ -213,11 +209,11 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         elif '/addFleet' in path:
             status = 200
             print(postBody)
-    
+
             emailOrUser = postBody['username']
             region = postBody['region']
             serviceType = postBody['serviceType']
-    
+
             statement = 'SELECT fmid FROM fleetmanagers WHERE email = %s OR username = %s'
             data = (emailOrUser, emailOrUser,)
             cursor.execute(statement, data)
@@ -227,7 +223,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             statement = 'INSERT INTO fleets (region, type, fmid) VALUES (%s, %s, %s)'
             cursor.execute(statement, data)
             sqlConnection.commit()
-    
+
         cursor.close()
         sqlConnection.close()
         self.send_response(status)
@@ -252,44 +248,16 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         responseBody = {}
 
         '''
-        Vehicle Request Resource Handler
-        As a generic GET request, our handler will return all vehicles that exists in our database formatted like so:
-            [
-                {
-                    "vehicleid": 28,
-                    "status": "active",
-                    "licenseplate": "123456",
-                    "fleetid": 5,
-                    "make": "Toyota",
-                    "model": "V-9",
-                    "current_lat": 30.2264,
-                    "current_lon": 97.7553,
-                    "last_heartbeat": null,
-                    "date_added": "2018-03-29T13:34:00"
-                },
-                {
-                    "vehicleid": 30,
-                    "status": "active",
-                    "licenseplate": "VA4891",
-                    "fleetid": 5,
-                    "make": "Toyota",
-                    "model": "V-9",
-                    "current_lat": 30.2264,
-                    "current_lon": 97.7553,
-                    "last_heartbeat": null,
-                    "date_added": "2018-03-29T00:00:00"
-                }, .. , {n-th vehicle}
-            ]
-            
-        The addition of parameters will be a filtering process
+        The addition of parameters will apply a filtering process
         '''
+
         if '/vehicleRequest' in path:
             statement = 'SELECT * FROM vehicles'
             cursor.execute(statement)
             rows = cursor.fetchall()
             vehicles = [list(x) for x in rows]
             fleetIDs = list(set([x[3] for x in vehicles]))
-    
+
             # print(vehicles)
             if hasParams:
                 # Parameter for fleet master
@@ -314,7 +282,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                         print(fleetIDs)
                     print(fleetIDs)
                     vehicles = [vehicle for fleetID in fleetIDs for vehicle in rows if fleetID == vehicle[3]]
-        
+
                 # Parameter for order id
                 # TODO: need to conform to new method of parsing
                 elif 'oid' in paramsDict:
@@ -363,7 +331,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             #     for k, v in vehicleDict.items():
             #         print(k, v)
 
-        # TODO: Not sure if it works
+        # TODO: BROKEN
         elif '/etaRequest' in path:
             # can ask about eta based on vid and oid
             # cannot ask with no parameters
@@ -374,20 +342,20 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             if 'vid' in paramKeys:
                 data = (int(paramDict['vid']),)
                 statement += 'vid = %s'
-
+    
             elif 'oid' in paramKeys:
                 data = (int(paramDict['oid']),)
                 statement += 'orderid = %s'
-
+    
             cursor = sqlConnection.cursor()
             cursor.execute(statement, data)
             dispatchTup = cursor.fetchone()[0]
             cursor.close()
-        
+    
             serviceType, vid, custid, orderid, \
             start_lat, start_lon, end_lat, end_lon, \
             start_time, status = dispatchTup
-        
+    
             dispatchDict = {
                 'serviceType': serviceType,
                 'vid': vid,
@@ -398,16 +366,16 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 'timeOrderMade': start_time,
                 'status': DispatchStatus.translate(status)
                 }
-        
+    
             dispatch = Dispatch(**dispatchDict)
-        
+    
             statement = 'SELECT current_lat, current_lon FROM vehicles WHERE vid = %s'
             cursor = sqlConnection.cursor()
             cursor.execute(statement)
             curPos = cursor.fetchone()[0]
             cursor.close()
             eta = dispatch.getETA(curPos)
-
+    
             responseBody = {
                 'ETA': eta
                 }
@@ -444,7 +412,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     'lat': float(startLat),
                     'lon': float(startLon)
                     }
-    
+
                 endLat, endLon = dispatch.pop(4), dispatch.pop(4)
                 endHuman = '1234 That Street Ave'
                 endDict = {
@@ -458,8 +426,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
             print(dispatches)
 
-            dispatchColsNames = ['did', 'vid', 'custid', 'orderid',
-                                 'startLocation', 'endLocation',
+            dispatchColsNames = ['did', 'vid', 'custid', 'orderid', ~
+            'startLocation', 'endLocation',
                                  'start_time', 'status', 'serviceType']
 
             dispatchDictList = []
@@ -487,6 +455,86 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(bytesStr)
 
 
+def healthChecker():
+    sqlConnection = connectToSQLDB()
+    cursor = sqlConnection.cursor()
+    statement = 'SELECT fleetid, fmid FROM fleets;'
+    cursor.execute(statement)
+    rows = cursor.fetchall()
+    cursor.close()
+    sqlConnection.close()
+    print(rows)
+    # for fleetData in rows:
+    #     thread = threading.Thread(target=heartbeatListener, args=fleetData)
+    #     thread.start()
+
+
+def heartbeatListener(fleetData):
+    fleetid, fmid = fleetData
+    print(f'Listener for Fleet {fleetid} has started')
+    sqlConnection = connectToSQLDB()
+    cursor = sqlConnection.cursor()
+    
+    statement = "SELECT email FROM fleetmanagers WHERE fmid = %s"
+    cursor.execute(statement, (fmid,))
+    email = cursor.fetchone[0]
+    cursor.close()
+    sqlConnection.close()
+    try:
+        while True:
+            time.sleep(45)
+            sqlConnection = connectToSQLDB()
+            cursor = sqlConnection.cursor()
+            
+            statement = "SELECT vid, last_heartbeat FROM vehicles WHERE fleetid = %s AND status <> 3"
+            cursor.execute(statement, (fleetid,))
+            rows = cursor.fetchall()
+            
+            cursor.close()
+            sqlConnection.close()
+            
+            d = {k: v for (k, v) in rows}
+            for vid, lasthb in d.items():
+                now = datetime.now()
+                difference = now - lasthb
+                minutes = difference.seconds / 60
+                print(f'Difference in minutes: {round(minutes, 4)}')
+                if difference > timedelta(minutes=5):
+                    # TODO: Test utils notifications call instead of all in one file. Need to see out it interacts
+                    #  with threads b/c sometimes threads don't like external function calls :C
+                    print(f'Vehicle ID: {vid} hasn\'t reported in for at least 5 minutes!')
+                    
+                    subject = f'Vehicle ID: {vid} hasn\'t reported in for {round(minutes, 2)}'
+                    body = f'Vehicle ID: {vid} hasn\'t reported in for {round(minutes, 2)}'
+                    notifications(recipients=email,
+                                  subject=subject,
+                                  body=body)
+                    
+                    # from sendgrid import SendGridAPIClient
+                    # from sendgrid.helpers.mail import Mail
+                    #
+                    # SENDGRID_API_KEY = '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'
+                    #
+                    # message = Mail(
+                    #         from_email='noreply@wegoalliances.com',
+                    #         to_emails=f'{email}',
+                    #         subject=f'Vehicle ID: {vid} hasn\'t reported in for {round(minutes, 2)}',
+                    #         html_content=f'Vehicle ID: {vid} hasn\'t reported in for {round(minutes, 2)}')
+                    # try:
+                    #     sendgrid_client = SendGridAPIClient(SENDGRID_API_KEY)
+                    #     response = sendgrid_client.send(message)
+                    #     print(response.status_code)
+                    #     print(response.body)
+                    #     print(response.headers)
+                    # except Exception as e:
+                    #     print(e)
+    
+    except KeyboardInterrupt:
+        raise
+    finally:
+        print(f'Listener for Fleet {fleetid} is ending')
+
+
 def main():
     port = 4022
     # Create an http server using the class and port you defined
@@ -500,3 +548,6 @@ def main():
 
 if __name__ == '__main__':
     main()
+    print('I got here')
+    healthChecker()
+    print('healthChecker initialised')
