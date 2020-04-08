@@ -490,7 +490,7 @@ def heartbeatListener(fleetid, fmid):
     
     statement = "SELECT email FROM fleetmanagers WHERE fmid = %s"
     cursor.execute(statement, (fmid,))
-    email = cursor.fetchone[0]
+    email = cursor.fetchone()[0]
     cursor.close()
     sqlConnection.close()
     try:
