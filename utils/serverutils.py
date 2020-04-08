@@ -12,7 +12,7 @@ def connectToSQLDB():
     # password = os.getenv('DB_PASSWORD')
     password = 'password'
     # print(f'Password: {password}')
-    return sqldb.connect(user='root', password=password, database='team22supply', port=6022)
+    return sqldb.connect(user='root', password=password, database='team22supply', port=6022, buffered=True)
 
 
 def notifications(recipients, subject, body, sender='noreply@wego.com'):
