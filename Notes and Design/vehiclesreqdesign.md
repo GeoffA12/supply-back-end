@@ -181,12 +181,10 @@ postBody = {
 ```
 **Scenario:**  
 Customer submits an order request
-I the API am expecting an order.json from the DemandBE
-I will respond to the DemandBE with confirmation of the order and that fulfillment has begun
-```
-method: POST 
-URI: https://supply.team22.softwareengineeringii.com/vehicles/req
-Content-Type: application/json;
+```python
+# method: POST 
+# URI: https://supply.team22.softwareengineeringii.com/vehicles/req
+# Content-Type: application/json;
 
 # Body as a JSON
 # What I, the API, want to reviece as far as formatting is concerned
@@ -205,8 +203,7 @@ Content-Type: application/json;
 # Dispatch written to disaptchRecord table
 # Get some sort of route from mapping service
 
-
-What I will be responding with as a json():
+# What I will be responding with as a json():
 {
     'vid': vid,
     'licensePlate': licensePlate,
@@ -222,42 +219,80 @@ What I will be responding with as a json():
 ```
 
 ### Registering a Vehicle
+Keys Value Constraints of the post body ***case sensitive**:
 
+|Key            |Value Type
+|:---           |:---
+|fleetid        |String
+|make           |String
+|model          |String
+|licensePlate   |String
+|dateAdded      |String
+
+#### Example acceptable postBody
+```python
+postBody = {
+    'fleetid': '8',
+    'make': 'Honda',
+    'model': 'Civic',
+    'licensePlate': 'AZ4915',
+    'dateAdded': '2020-03-28T08:34:32.698Z'
+}
+```
+**Scenario**
+A Fleet manager adds some vehicles to his fleet
+```python
+# method: POST 
+# URI: https://supply.team22.softwareengineeringii.com/vehicles/add
+# Content-Type: application/json;
+{
+    'fleetid': '8',
+    'make': 'Honda',
+    'model': 'Civic',
+    'licensePlate': 'AZ4915',
+    'dateAdded': '2020-03-28T08:34:32.698Z'
+}
+```
 ### Removing a Vehicle
 
 ### Updating a Vehicle
+Keys Value Constraints of the post body ***case sensitive**:
 
-Need to revise  
-**Scenario 3:**  
-Our vehicle will periodically be sending its location and status. 
-Since our status is now fulfilled, destination would be null/empty string (whatever gets decided for empty
-  cells, for now will represent with empty strings)
-```
-method: PATCH 
-URI: https://supply.team22.softwareengineeringii.com/api/backend/0.0/vehicles?vid=12345
-Content-Type: application/json
+|Key                |Value Type
+|:---               |:---
+|vid*               |String
+|status*            |String
+|licenseplate       |String
+|fleetid            |String
+|current_lat        |Float
+|current_lon        |Float
+|last_heartbeat*    |String
 
-I am the vehicle sending this JSON Body to the SupplyBE
-{
-    "status" : Delivered,
-    "location" : {
-        "lon" : 134.12,
-        "lat" : 31.21
-    },
-    "destination" : {
-        "address1" : "",
-        "address2" : ""
-    }
+#### *Notes for Key Value Constraints
+##### vid
+Every update request MUST have the vid key
+
+##### last_heartbeat
+The formatting of the heartbeat must be in ISO 8601 format
+Given that the last_heartbeat key exists, postBody must also contain the keys current_lat and current_lon
+
+#### Example acceptable postBody
+```python
+postBody = {
+    'vid': '23',
+    'status': 'MAINTENANCE'
 }
-
-# Check for malformed data, query vehicle table on incoming VIN, PATCH incoming data
-# Kinda rusty on SQL syntax, but I think this gets the message accross
-def vehiclePing(self, desiredVIN, patchData)
-    SELECT * FROM Vehicles WHERE VIN = desiredVIN:
-    PATCH status, lon, lat, destination:
-    patchData[status], 
-    patchData[location[lon]], 
-    patchData[location[lat]], 
-    f'{patchData[destination[address1]]}, 
-    {patchData[destination[address2]]}'
+```
+**Scenario**
+A vehicle sends its heartbeat
+```python
+# method: POST 
+# URI: https://supply.team22.softwareengineeringii.com/vehicles/upd
+# Content-Type: application/json;
+{
+    'vid': '23',
+    'current_lat': 51.51,
+    'current_lon': -12.41, 
+    'last_heartbeat': '2020-04-07T11:54:12.698Z'
+}
 ```
