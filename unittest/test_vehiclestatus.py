@@ -14,14 +14,17 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(VehicleStatus.ACTIVE, enum)
         enum = VehicleStatus.translate('ACTIVE')
         self.assertEqual(VehicleStatus.ACTIVE, enum)
-        enum = VehicleStatus.translate('aslkdas')
-        self.assertEqual(None, enum)
-    
+        try:
+            enum = VehicleStatus.translate('aslkdas')
+        except ValueError as ve:
+            print(ve)
+            print('found ve')
+
     def test_active(self):
         enum = VehicleStatus.ACTIVE
         self.assertEqual('ACTIVE', enum.name)
         self.assertEqual(1, enum.value)
-    
+
     def test_inactive(self):
         enum = VehicleStatus.INACTIVE
         self.assertEqual('INACTIVE', enum.name)

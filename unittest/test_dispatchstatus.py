@@ -14,8 +14,11 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(DispatchStatus.QUEUED, enum)
         enum = DispatchStatus.translate('quEued')
         self.assertEqual(DispatchStatus.QUEUED, enum)
-        enum = DispatchStatus.translate('wqeq')
-        self.assertEqual(None, enum)
+        try:
+            enum = DispatchStatus.translate('wqeq')
+        except ValueError as ve:
+            print(ve)
+            print('found ve')
     
     def test_queued(self):
         enum = DispatchStatus.QUEUED

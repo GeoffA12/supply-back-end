@@ -12,6 +12,11 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(ServiceType.DRY_CLEANING, enum)
         enum = ServiceType.translate('DRY CLEANING')
         self.assertEqual(ServiceType.DRY_CLEANING, enum)
+        try:
+            enum = ServiceType.translate('wqeq')
+        except ValueError as ve:
+            print(ve)
+            print('found ve')
     
     def test_drycleaning(self):
         enum = ServiceType.DRY_CLEANING
