@@ -21,4 +21,4 @@ class ServiceType(Enum):
         elif name == 'events':
             return cls.EVENTS
         else:
-            return None
+            raise ValueError('Cannot translate into enum')

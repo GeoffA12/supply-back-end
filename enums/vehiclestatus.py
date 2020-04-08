@@ -18,4 +18,4 @@ class VehicleStatus(Enum):
         elif name == 'maintenance':
             return cls.MAINTENANCE
         else:
-            return None
+            raise ValueError('Cannot translate into enum')

@@ -18,4 +18,4 @@ class DispatchStatus(Enum):
         elif name == 'done':
             return cls.DONE
         else:
-            return None
+            raise ValueError('Cannot translate into enum')
