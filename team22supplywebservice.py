@@ -125,9 +125,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 dispatch.timeCreated, dispatch.status.value, dispatch.serviceType.value,
                 )
             statement = '''INSERT INTO dispatch
-                        (vid, custid, orderid, start_lat, start_lon,
-                        end_lat, end_lon, start_time, status, type)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'''
+                        VALUES (Null, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'''
             cursor.execute(statement, data)
             sqlConnection.commit()
             
@@ -151,15 +149,25 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 # This is Steds btw d: ==> 30.2264, 97.7553,
                 entry = (2, vehicleDict['licensePlate'], vehicleDict['fleetid'],
                          vehicleDict['make'], vehicleDict['model'],
-                         30.2264, 97.7553, vehicleDict['dateAdded'].replace('T', ' ').replace('Z', ' '))
+                         30.2264, 97.7553, None, vehicleDict['dateAdded'].replace('T', ' ').replace('Z', ' '))
                 data.append(entry)
             print(data)
             statement = '''INSERT INTO vehicles
-                        (status, licenseplate, fleetid,
-                        make, model, current_lat, current_lon, date_added)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)'''
+                        VALUES (Null, %s, %s, %s, %s, %s, %s, %s, %s, %s)'''
             cursor.executemany(statement, data)
             sqlConnection.commit()
+
+            fleetid = postBody[0]['fleetid']
+            print(fleetid)
+            statement = '''SELECT email FROM fleetmanagers, fleets
+                        WHERE fleetmanagers.fmid = fleets.fmid
+                        AND fleetid = %s'''
+            cursor.execute(statement, (fleetid,))
+            email = cursor.fetchone()[0]
+
+            subject = f'Vehicle Adding Successful'
+            body = f'Vehicle {"has been" if postBody == 1 else "s were"} added to the database'
+            notifications(recipients=email, subject=subject, body=body)
 
         elif '/removeVehicle' in path:
             status = 200
@@ -175,18 +183,24 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             sqlConnection.commit()
 
         elif '/updateVehicle' in path:
-            print()
+            allowableUpdates = {'status', 'licenseplate', 'fleetid', 'current_lat', 'current_lon', 'last_heartbeat'}
+            print(postBody)
+            status = 401
+    
+            vidless = deepcopy(postBody)
+            del vidless['vid']
+    
+            if 'vid' in postBody and set(vidless.keys()).issubset(allowableUpdates):
+                data = (postBody['vid'],)
+                statement = 'SELECT * FROM vehicles WHERE vid = %s'
+                cursor.execute(statement, data)
+                entry = cursor.fetchone()[0]
+                if entry is not None:
+                    status = 200
+                    'Now we can start checking for what we\'re updating'
+                    statement = 'UPDATE vehicles SET '
+    
             '''
-            Things that I will allow updating of the vehicle
-            status
-            licenseplate
-            fleetid
-            make (?)
-            model (?)
-            current_lat
-            current_lon
-            last_heartbeat
-            
             Precondition(s):
             postBody must contain the key
             'vid' with a value of a vehicle that exists in the db
