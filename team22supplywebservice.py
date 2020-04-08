@@ -495,39 +495,40 @@ def heartbeatListener(fleetData):
             
             d = {k: v for (k, v) in rows}
             for vid, lasthb in d.items():
-                now = datetime.now()
-                difference = now - lasthb
-                minutes = difference.seconds / 60
-                print(f'Difference in minutes: {round(minutes, 4)}')
-                if difference > timedelta(minutes=5):
-                    # TODO: Test utils notifications call instead of all in one file. Need to see out it interacts
-                    #  with threads b/c sometimes threads don't like external function calls :C
-                    print(f'Vehicle ID: {vid} hasn\'t reported in for at least 5 minutes!')
-                    
-                    subject = f'Vehicle ID: {vid} hasn\'t reported in for {round(minutes, 2)}'
-                    body = f'Vehicle ID: {vid} hasn\'t reported in for {round(minutes, 2)}'
-                    notifications(recipients=email,
-                                  subject=subject,
-                                  body=body)
-                    
-                    # from sendgrid import SendGridAPIClient
-                    # from sendgrid.helpers.mail import Mail
-                    #
-                    # SENDGRID_API_KEY = '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'
-                    #
-                    # message = Mail(
-                    #         from_email='noreply@wegoalliances.com',
-                    #         to_emails=f'{email}',
-                    #         subject=f'Vehicle ID: {vid} hasn\'t reported in for {round(minutes, 2)}',
-                    #         html_content=f'Vehicle ID: {vid} hasn\'t reported in for {round(minutes, 2)}')
-                    # try:
-                    #     sendgrid_client = SendGridAPIClient(SENDGRID_API_KEY)
-                    #     response = sendgrid_client.send(message)
-                    #     print(response.status_code)
-                    #     print(response.body)
-                    #     print(response.headers)
-                    # except Exception as e:
-                    #     print(e)
+                if lasthb is not None:
+                    now = datetime.now()
+                    difference = now - lasthb
+                    minutes = difference.seconds / 60
+                    print(f'Difference in minutes: {round(minutes, 4)}')
+                    if difference > timedelta(minutes=5):
+                        # TODO: Test utils notifications call instead of all in one file. Need to see out it interacts
+                        #  with threads b/c sometimes threads don't like external function calls :C
+                        print(f'Vehicle ID: {vid} hasn\'t reported in for at least 5 minutes!')
+            
+                        subject = f'Vehicle ID: {vid} hasn\'t reported in for {round(minutes, 2)}'
+                        body = f'Vehicle ID: {vid} hasn\'t reported in for {round(minutes, 2)}'
+                        notifications(recipients=email,
+                                      subject=subject,
+                                      body=body)
+            
+                        # from sendgrid import SendGridAPIClient
+                        # from sendgrid.helpers.mail import Mail
+                        #
+                        # SENDGRID_API_KEY = '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'
+                        #
+                        # message = Mail(
+                        #         from_email='noreply@wegoalliances.com',
+                        #         to_emails=f'{email}',
+                        #         subject=f'Vehicle ID: {vid} hasn\'t reported in for {round(minutes, 2)}',
+                        #         html_content=f'Vehicle ID: {vid} hasn\'t reported in for {round(minutes, 2)}')
+                        # try:
+                        #     sendgrid_client = SendGridAPIClient(SENDGRID_API_KEY)
+                        #     response = sendgrid_client.send(message)
+                        #     print(response.status_code)
+                        #     print(response.body)
+                        #     print(response.headers)
+                        # except Exception as e:
+                        #     print(e)
     
     except KeyboardInterrupt:
         raise
