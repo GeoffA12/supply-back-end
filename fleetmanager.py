@@ -11,7 +11,7 @@ from account import Account
 
 
 class FleetManager(Account):
-    ver = '0.0.0'
+    ver = '0.1.0'
     
     def __init__(self, username, email, password, firstname, lastname, phonenumber):
         super().__init__(username, email, password, firstname, lastname, phonenumber)
