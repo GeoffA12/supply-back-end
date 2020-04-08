@@ -125,9 +125,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 dispatch.timeCreated, dispatch.status.value, dispatch.serviceType.value,
                 )
             statement = '''INSERT INTO dispatch
-                        (vid, custid, orderid, start_lat, start_lon,
-                        end_lat, end_lon, start_time, status, type)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'''
+                        VALUES (Null, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'''
             cursor.execute(statement, data)
             sqlConnection.commit()
             
@@ -154,8 +152,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                          30.2264, 97.7553, None, vehicleDict['dateAdded'].replace('T', ' ').replace('Z', ' '))
                 data.append(entry)
             print(data)
-            #                         (status, licenseplate, fleetid,
-            #                         make, model, current_lat, current_lon, date_added)
             statement = '''INSERT INTO vehicles
                         VALUES (Null, %s, %s, %s, %s, %s, %s, %s, %s)'''
             cursor.executemany(statement, data)
