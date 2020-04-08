@@ -51,7 +51,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         # Pulling in our postbody data and opening up our SQL connection
         postBody = self.getPOSTBody()
         sqlConnection = connectToSQLDB()
-        cursor = sqlConnection.cursor()
+        cursor = sqlConnection.cursor(buffered=True)
         responseBody = {}
         print(postBody)
     
@@ -289,7 +289,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         print(hasParams)
 
         sqlConnection = connectToSQLDB()
-        cursor = sqlConnection.cursor()
+        cursor = sqlConnection.cursor(buffered=True)
         responseBody = {}
         '''
         The addition of parameters will apply a filtering process
@@ -439,16 +439,18 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             for vid in vids:
                 cursor = sqlConnection.cursor()
                 cursor.execute(statement, vid)
-                dispatchTup = cursor.fetchone()
+                dispatchTup = cursor.fetchall()
                 print('tup:', dispatchTup)
                 if dispatchTup is not None:
-                    dispatches.append(list(dispatchTup))
+                    temp = [list(x) for x in dispatchTup]
+                    dispatches.extend(temp)
 
             print(dispatches)
             dispatchesCopy = deepcopy(dispatches)
 
             dispatches = []
             for dispatch in dispatchesCopy:
+                print('dispatch', dispatch)
                 startLat, startLon = dispatch.pop(4), dispatch.pop(4)
                 startHuman = 'St. Edward\'s University'
                 startDict = {
@@ -519,7 +521,7 @@ CHECKER_INTERVAL = 45
 def heartbeatListener(fleetid, fmid):
     print(f'Listener for Fleet {fleetid} has started')
     sqlConnection = connectToSQLDB()
-    cursor = sqlConnection.cursor()
+    cursor = sqlConnection.cursor(buffered=True)
     
     statement = "SELECT email FROM fleetmanagers WHERE fmid = %s"
     cursor.execute(statement, (fmid,))
@@ -533,7 +535,7 @@ def heartbeatListener(fleetid, fmid):
             time.sleep(CHECKER_INTERVAL)
             # print(fleetid, email)
             sqlConnection = connectToSQLDB()
-            cursor = sqlConnection.cursor()
+            cursor = sqlConnection.cursor(buffered=True)
             
             statement = "SELECT vid, last_heartbeat FROM vehicles WHERE fleetid = %s AND status <> 3"
             cursor.execute(statement, (fleetid,))
