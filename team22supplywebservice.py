@@ -478,9 +478,9 @@ def healthChecker():
     cursor.close()
     sqlConnection.close()
     print(rows)
-    # for fleetData in rows:
-    #     thread = threading.Thread(target=heartbeatListener, args=fleetData)
-    #     thread.start()
+    for fleetData in rows:
+        thread = threading.Thread(target=heartbeatListener, args=fleetData)
+        thread.start()
 
 
 def heartbeatListener(fleetData):
@@ -497,43 +497,44 @@ def heartbeatListener(fleetData):
     try:
         while True:
             time.sleep(45)
-            sqlConnection = connectToSQLDB()
-            cursor = sqlConnection.cursor()
-            
-            statement = "SELECT vid, last_heartbeat FROM vehicles WHERE fleetid = %s AND status <> 3"
-            cursor.execute(statement, (fleetid,))
-            rows = cursor.fetchall()
-            
-            cursor.close()
-            sqlConnection.close()
-            
-            d = {k: v for (k, v) in rows}
-            for vid, lasthb in d.items():
-                if lasthb is not None:
-                    now = datetime.now()
-                    difference = now - lasthb
-                    minutes = difference.seconds / 60
-                    print(f'Difference in minutes: {round(minutes, 4)}')
-                    if difference > timedelta(minutes=5):
-                        # TODO: Test utils notifications call instead of all in one file. Need to see out it interacts
-                        #  with threads b/c sometimes threads don't like external function calls :C
-                        print(f'Vehicle ID: {vid} hasn\'t reported in for at least 5 minutes!')
-            
-                        subject = f'Vehicle ID: {vid} hasn\'t reported in for {round(minutes, 2)}'
-                        body = f'Vehicle ID: {vid} hasn\'t reported in for {round(minutes, 2)}'
-                        notifications(recipients=email,
-                                      subject=subject,
-                                      body=body)
-            
-                        # from sendgrid import SendGridAPIClient
-                        # from sendgrid.helpers.mail import Mail
-                        #
-                        # SENDGRID_API_KEY = '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'
-                        #
-                        # message = Mail(
-                        #         from_email='noreply@wegoalliances.com',
-                        #         to_emails=f'{email}',
-                        #         subject=f'Vehicle ID: {vid} hasn\'t reported in for {round(minutes, 2)}',
+            print(fleetid, email)
+            # sqlConnection = connectToSQLDB()
+            # cursor = sqlConnection.cursor()
+            #
+            # statement = "SELECT vid, last_heartbeat FROM vehicles WHERE fleetid = %s AND status <> 3"
+            # cursor.execute(statement, (fleetid,))
+            # rows = cursor.fetchall()
+            #
+            # cursor.close()
+            # sqlConnection.close()
+            #
+            # d = {k: v for (k, v) in rows}
+            # for vid, lasthb in d.items():
+            #     if lasthb is not None:
+            #         now = datetime.now()
+            #         difference = now - lasthb
+            #         minutes = difference.seconds / 60
+            #         print(f'Difference in minutes: {round(minutes, 4)}')
+            #         if difference > timedelta(minutes=5):
+            #             # TODO: Test utils notifications call instead of all in one file. Need to see out it interacts
+            #             #  with threads b/c sometimes threads don't like external function calls :C
+            #             print(f'Vehicle ID: {vid} hasn\'t reported in for at least 5 minutes!')
+            #
+            #             subject = f'Vehicle ID: {vid} hasn\'t reported in for {round(minutes, 2)}'
+            #             body = f'Vehicle ID: {vid} hasn\'t reported in for {round(minutes, 2)}'
+            #             notifications(recipients=email,
+            #                           subject=subject,
+            #                           body=body)
+    
+            # from sendgrid import SendGridAPIClient
+            # from sendgrid.helpers.mail import Mail
+            #
+            # SENDGRID_API_KEY = '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'
+            #
+            # message = Mail(
+            #         from_email='noreply@wegoalliances.com',
+            #         to_emails=f'{email}',
+            #         subject=f'Vehicle ID: {vid} hasn\'t reported in for {round(minutes, 2)}',
                         #         html_content=f'Vehicle ID: {vid} hasn\'t reported in for {round(minutes, 2)}')
                         # try:
                         #     sendgrid_client = SendGridAPIClient(SENDGRID_API_KEY)
@@ -558,11 +559,14 @@ def main():
     # this next call is blocking! So consult with Devops Coordinator for
     # instructions on how to run without blocking other commands frombeing
     # executed in your terminal!
+    print('I got here')
+    healthChecker()
+    print('healthChecker initialised')
     httpServer.serve_forever()
 
 
 if __name__ == '__main__':
     main()
-    print('I got here')
-    healthChecker()
-    print('healthChecker initialised')
+    # print('I got here')
+    # healthChecker()
+    # print('healthChecker initialised')
