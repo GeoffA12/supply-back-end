@@ -64,7 +64,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             print(postBody['serviceType'])
         
             data = [VehicleStatus.INACTIVE.value, postBody['serviceType'].value, ]
-        
+            # print(data)
             # Query all vehicles whose status is INACTIVE and are a part of the fleet whose ServiceType is the
             # incoming order's service type
             # We need a switch here to know whether our dispatch should be inserted as QUEUED or RUNNING for the case
@@ -80,7 +80,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         
             # In the case that we have no inactive vehicles, we then ask for the active vehicles and later on,
             # instead of a running dispatch, it will be queued.
-            if vehicleEntries is None:
+            if not vehicleEntries:
                 needsToBeQueued = True
                 data[0] = VehicleStatus.ACTIVE.value
                 cursor.execute(statement, tuple(data))
@@ -98,6 +98,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             if not needsToBeQueued:
                 # Now that a vehicle has been assigned, their status will be updated, of course given that they
                 # weren't already active
+                print('updating vehicle status')
                 statement = 'UPDATE vehicles SET status = 1'
                 cursor.execute(statement)
                 sqlConnection.commit()
