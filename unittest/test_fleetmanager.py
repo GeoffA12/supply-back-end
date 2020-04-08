@@ -4,19 +4,21 @@ import sys
 sys.path.insert(1, '../')
 from fleetmanager import FleetManager
 
+postBody = {
+    'username': 'komoto415',
+    'email': 'komoto415@gmail.com',
+    'password': 'password',
+    'firstname': 'Jeffrey',
+    'lastname': 'Ng',
+    'phonenumber': '1234567890'
+    }
 
 class MyTestCase(unittest.TestCase):
     def test_createFleetManager(self):
-        fm = FleetManager('user1')
-        
-        self.assertEqual('user1', fm.username)
-        self.assertEqual(123, fm.fmid)
-        self.assertEqual('email1@gmail.com', fm.email)
-        self.assertTrue(1 in fm.fleetids)
-        self.assertFalse(3 in fm.fleetids)
-        
+        fm = FleetManager(**postBody)
         print(fm)
-
+        self.assertEqual('komoto415', fm.username)
+        self.assertEqual('Yes', fm.fleetIDs)
 
 if __name__ == '__main__':
     unittest.main()
