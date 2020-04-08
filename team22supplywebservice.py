@@ -483,8 +483,7 @@ def healthChecker():
         thread.start()
 
 
-def heartbeatListener(fleetData):
-    fleetid, fmid = fleetData
+def heartbeatListener(fleetid, fmid):
     print(f'Listener for Fleet {fleetid} has started')
     sqlConnection = connectToSQLDB()
     cursor = sqlConnection.cursor()
