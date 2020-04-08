@@ -515,25 +515,21 @@ def healthChecker():
         thread.start()
 
 
-CHECKER_INTERVAL = 45
-
-
 def heartbeatListener(fleetid, fmid):
     print(f'Listener for Fleet {fleetid} has started')
     sqlConnection = connectToSQLDB()
     cursor = sqlConnection.cursor(buffered=True)
-    
+
     statement = "SELECT email FROM fleetmanagers WHERE fmid = %s"
     cursor.execute(statement, (fmid,))
     email = cursor.fetchone()[0]
     cursor.close()
     sqlConnection.close()
-    
+    CHECKER_INTERVAL = 45
     missedHeartbeats = {}
     try:
         while True:
             time.sleep(CHECKER_INTERVAL)
-            # print(fleetid, email)
             sqlConnection = connectToSQLDB()
             cursor = sqlConnection.cursor(buffered=True)
 
@@ -552,10 +548,8 @@ def heartbeatListener(fleetid, fmid):
                     minutes = difference.seconds / 60
                     print(f'Difference in minutes: {round(minutes, 4)}')
                     if difference > timedelta(minutes=5):
-                        # TODO: Test utils notifications call instead of all in one file. Need to see out it interacts
-                        #  with threads b/c sometimes threads don't like external function calls :C
                         print(f'Vehicle ID: {vid} hasn\'t reported in for at least 5 minutes!')
-            
+
                         subject = f'Vehicle ID: {vid} hasn\'t reported in for {round(minutes, 2)}'
                         body = f'Vehicle ID: {vid} hasn\'t reported in for {round(minutes, 2)}'
                         notifications(recipients=email,
@@ -563,27 +557,8 @@ def heartbeatListener(fleetid, fmid):
                                       body=body)
                 else:
                     print('vehicle just added and hasn\'t spun up a heartbeat')
-                    notifications(recipients='hi', subject='hi', body='hi')
+                    # notifications(recipients=email, subject='hi', body='hi')
 
-            # from sendgrid import SendGridAPIClient
-            # from sendgrid.helpers.mail import Mail
-            #
-            # SENDGRID_API_KEY = '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'
-            #
-            # message = Mail(
-            #         from_email='noreply@wegoalliances.com',
-            #         to_emails=f'{email}',
-            #         subject=f'Vehicle ID: {vid} hasn\'t reported in for {round(minutes, 2)}',
-            #         html_content=f'Vehicle ID: {vid} hasn\'t reported in for {round(minutes, 2)}')
-            # try:
-            #     sendgrid_client = SendGridAPIClient(SENDGRID_API_KEY)
-            #     response = sendgrid_client.send(message)
-            #     print(response.status_code)
-            #     print(response.body)
-            #     print(response.headers)
-            # except Exception as e:
-            #     print(e)
-    
     except KeyboardInterrupt:
         raise
     finally:
