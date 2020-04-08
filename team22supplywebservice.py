@@ -153,7 +153,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 data.append(entry)
             print(data)
             statement = '''INSERT INTO vehicles
-                        VALUES (Null, %s, %s, %s, %s, %s, %s, %s, %s)'''
+                        VALUES (Null, %s, %s, %s, %s, %s, %s, %s, %s, %s)'''
             cursor.executemany(statement, data)
             sqlConnection.commit()
 
