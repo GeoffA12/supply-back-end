@@ -229,15 +229,20 @@ Keys Value Constraints of the post body ***case sensitive**:
 |licensePlate   |String
 |dateAdded      |String
 
+In addition to the key value constraints, multiple simultaneous vehicle registration is supported. Each vehicle
+ dictionary will be contained inside of an array, even in the case of adding a single vehicle
+
 #### Example acceptable postBody
 ```python
-postBody = {
-    'fleetid': '8',
-    'make': 'Honda',
-    'model': 'Civic',
-    'licensePlate': 'AZ4915',
-    'dateAdded': '2020-03-28T08:34:32.698Z'
-}
+postBody = [
+    {
+        'fleetid': '8',
+        'make': 'Honda',
+        'model': 'Civic',
+        'licensePlate': 'AZ4915',
+        'dateAdded': '2020-03-28T08:34:32.698Z'
+    }
+]
 ```
 **Scenario**
 A Fleet manager adds some vehicles to his fleet
