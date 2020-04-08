@@ -17,7 +17,10 @@ def notifications(recipients, subject, body, sender='noreply@wego.com'):
     
     # project_folder = os.path.expanduser('~/supply-backend/Experimenting')  # adjust as appropriate
     # load_dotenv(os.path.join(project_folder, '.env'))
-    
+    print(sender)
+    print(recipients)
+    print(subject)
+    print(body)
     # SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY')
     SENDGRID_API_KEY = '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'
     
