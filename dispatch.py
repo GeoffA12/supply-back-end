@@ -54,7 +54,8 @@ class Dispatch(object):
     def status(self):
         return self._status
 
-    def getRoute(self, lat, lon):
+    def getRoute(self, curPos):
+        print(curPos)
         # do stuff to get the route
         return 'my route'
     
