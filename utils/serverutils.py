@@ -11,7 +11,7 @@ def connectToSQLDB():
     import mysql.connector as sqldb
     # password = os.getenv('DB_PASSWORD')
     password = 'password'
-    print(f'Password: {password}')
+    # print(f'Password: {password}')
     return sqldb.connect(user='root', password=password, database='team22supply', port=6022)
 
 
