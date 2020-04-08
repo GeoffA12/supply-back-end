@@ -8,7 +8,7 @@ class Dispatch(object):
     ver = '0.5.0'
     
     def __init__(self, serviceType, vid, custid, orderid, loc_0, loc_f, timeOrderMade,
-                 status=DispatchStatus.QUEUED):
+                 status=DispatchStatus.RUNNING):
         assert type(serviceType) is ServiceType
         assert type(status) is DispatchStatus
         print(timeOrderMade)
@@ -20,6 +20,7 @@ class Dispatch(object):
         self._loc_f = loc_f
         self._timeCreated = timeOrderMade
         self._status = status
+        self._route = self.getRoute(loc_0)
     
     @property
     def serviceType(self):
@@ -52,14 +53,10 @@ class Dispatch(object):
     @property
     def status(self):
         return self._status
-    
-    def getRoute(self, curLoc):
-        print('my route')
+
+    def getRoute(self, lat, lon):
         # do stuff to get the route
-    
-    def getETA(self, curLoc):
-        print('my eta')
-        # do stuff to get ETA, will probably need DateTime.now stuff
+        return 'my route'
     
     def completed(self):
         self._status = DispatchStatus.DONE
