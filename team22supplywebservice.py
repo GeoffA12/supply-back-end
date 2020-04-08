@@ -536,32 +536,35 @@ def heartbeatListener(fleetid, fmid):
             # print(fleetid, email)
             sqlConnection = connectToSQLDB()
             cursor = sqlConnection.cursor(buffered=True)
-            
+
             statement = "SELECT vid, last_heartbeat FROM vehicles WHERE fleetid = %s AND status <> 3"
             cursor.execute(statement, (fleetid,))
             rows = cursor.fetchall()
             print(rows)
             cursor.close()
             sqlConnection.close()
+
+            d = {k: v for (k, v) in rows}
+            for vid, lasthb in d.items():
+                if lasthb is not None:
+                    now = datetime.now()
+                    difference = now - lasthb
+                    minutes = difference.seconds / 60
+                    print(f'Difference in minutes: {round(minutes, 4)}')
+                    if difference > timedelta(minutes=5):
+                        # TODO: Test utils notifications call instead of all in one file. Need to see out it interacts
+                        #  with threads b/c sometimes threads don't like external function calls :C
+                        print(f'Vehicle ID: {vid} hasn\'t reported in for at least 5 minutes!')
             
-            # d = {k: v for (k, v) in rows}
-            # for vid, lasthb in d.items():
-            #     if lasthb is not None:
-            #         now = datetime.now()
-            #         difference = now - lasthb
-            #         minutes = difference.seconds / 60
-            #         print(f'Difference in minutes: {round(minutes, 4)}')
-            #         if difference > timedelta(minutes=5):
-            #             # TODO: Test utils notifications call instead of all in one file. Need to see out it interacts
-            #             #  with threads b/c sometimes threads don't like external function calls :C
-            #             print(f'Vehicle ID: {vid} hasn\'t reported in for at least 5 minutes!')
-            #
-            #             subject = f'Vehicle ID: {vid} hasn\'t reported in for {round(minutes, 2)}'
-            #             body = f'Vehicle ID: {vid} hasn\'t reported in for {round(minutes, 2)}'
-            #             notifications(recipients=email,
-            #                           subject=subject,
-            #                           body=body)
-            
+                        subject = f'Vehicle ID: {vid} hasn\'t reported in for {round(minutes, 2)}'
+                        body = f'Vehicle ID: {vid} hasn\'t reported in for {round(minutes, 2)}'
+                        notifications(recipients=email,
+                                      subject=subject,
+                                      body=body)
+                else:
+                    print('vehicle just added and hasn\'t spun up a heartbeat')
+                    notifications(recipients='hi', subject='hi', body='hi')
+
             # from sendgrid import SendGridAPIClient
             # from sendgrid.helpers.mail import Mail
             #
