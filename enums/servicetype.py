@@ -2,7 +2,7 @@ from enum import Enum, auto
 
 
 class ServiceType(Enum):
-    ver = '0.2.0'
+    ver = '0.2.1'
     
     DRY_CLEANING = 1
     RX = auto()
@@ -12,7 +12,7 @@ class ServiceType(Enum):
     @classmethod
     def translate(cls, string):
         name = string.replace(' ', '').lower()
-        if name == 'drycleaning':
+        if name == 'dry_cleaning':
             return cls.DRY_CLEANING
         elif name == 'rx':
             return cls.RX
