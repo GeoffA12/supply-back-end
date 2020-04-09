@@ -1,5 +1,11 @@
 # Unit Test Coverage
+Authored by: Jeffrey Ng  
+## Total Coverage
+|Statements         |Miss       |Cover
+|---:               |---:       |---:
+|426                |34         |92%
 
+## Coverage by File
 ### test_dispatch.py
 |Name                   |Statements         |Miss       |Cover
 |---:                   |---:               |---:       |---:
