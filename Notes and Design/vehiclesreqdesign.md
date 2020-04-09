@@ -10,23 +10,16 @@
 |DELETE     |/vehicles    |DELETE             |No
 |HEAD       |/vehicles    |EXISTS             |No
 
-## Read Supported Resources
+## Read Supported Vehicle Resources
 TO BE REFACTORED  
 URI: `/vehicleRequest`
 
 | Parameter | Semantics     |
 |:---       |:---           |
+|vid        |Vehicle ID     |   
 |oid        |Order ID       |
-|vid        |Vehicle ID     |
-|user       |Fleet master   |
+|fmid       |Fleet master   |
 |fid        |Fleet ID       |
-
-
-### By Order ID ![Generic badge](https://img.shields.io/badge/status-Unstable-red.svg)
-**API Call:**  
-https://supply.team22.softwareengineeringii.com/supply/vehicles?oid={order id}  
-**Example API Call:**  
-https://supply.team22.softwareengineeringii.com/supply/vehicles?oid=12
 
 ### By Vehicle ID ![Generic badge](https://img.shields.io/badge/status-Stable-green.svg)
 **API Call:**  
@@ -34,11 +27,17 @@ https://supply.team22.softwareengineeringii.com/supply/vehicles?vid={vehicle id}
 **Example API Call:**  
 https://supply.team22.softwareengineeringii.com/supply/vehicles?vid=30
 
+### By Order ID ![Generic badge](https://img.shields.io/badge/status-Unstable-red.svg)
+**API Call:**  
+https://supply.team22.softwareengineeringii.com/supply/vehicles?oid={order id}  
+**Example API Call:**  
+https://supply.team22.softwareengineeringii.com/supply/vehicles?oid=12
+
 ### By Fleet Master ![Generic badge](https://img.shields.io/badge/status-Stable-green.svg)
 **API Call:**  
-https://supply.team22.softwareengineeringii.com/supply/vehicles?user={fleet master email}  
+https://supply.team22.softwareengineeringii.com/supply/vehicles?fmid={fleet master email}  
 **Example API Call:**  
-https://supply.team22.softwareengineeringii.com/supply/vehicles?user=komoto415%40gmail.com
+https://supply.team22.softwareengineeringii.com/supply/vehicles?fmid=komoto415%40gmail.com
 
 ### By Fleet ID ![Generic badge](https://img.shields.io/badge/status-Broken-red.svg)
 **API Call:**  
@@ -111,6 +110,23 @@ HTTP Status: 404
     'failed': f'No running dispatch with order id {oid}'
 }
 ```
+
+## Read Supported Dispatch Resources
+TO BE REFACTORED  
+URI: `/getDispatch`
+
+| Parameter | Semantics     |
+|:---       |:---           |
+|vid        |Vehicle ID     |
+
+### By Vehicle ID ![Generic badge](https://img.shields.io/badge/status-Stable-green.svg)
+**API Call:**  
+https://supply.team22.softwareengineeringii.com/supply/dispatch?vid={order id}  
+**Example API Call:**  
+https://supply.team22.softwareengineeringii.com/supply/dispatch?vid=12  
+
+## Scenarios
+
 
 ## POST Supported Resources
 |URI                    |Semantics
