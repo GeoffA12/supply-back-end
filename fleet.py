@@ -1,4 +1,3 @@
-from utils.serverutils import connectToSQLDB
 from enums.servicetype import ServiceType
 
 
@@ -29,21 +28,11 @@ class Fleet(object):
     def serviceType(self):
         return self._serviceType
     
-    # def getVehicles(self):
-    #     print('get vehicles')
-    #     sqlConnection = connectToSQLDB()
-    #     statement = f'SELECT * FROM vehicles WHERE fleetid = {self.fleetid}'
-    #     cursor = sqlConnection.curor()
-    #     cursor.execute(statement)
-    #     vehicleList = cursor.fetchall()
-    #     sqlConnection.close()
-    #     return dict(enumerate(x for x in vehicleList))
-    
     def asdict(self):
         return self.__dict__
     
     def __repr__(self):
-        return f'''{self.fleetid}, {self.fmid}, {self.region}, {self.serviceType}'''
+        return f'''Fleet({self.fleetid}, {self.fmid}, {self.region}, {self.serviceType})'''
     
     def __str__(self):
         return f'''Fleet ID: {self.fleetid}

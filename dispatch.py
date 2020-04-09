@@ -1,5 +1,3 @@
-from datetime import datetime
-from utils.serverutils import connectToSQLDB
 from enums.dispatchstatus import DispatchStatus
 from enums.servicetype import ServiceType
 
@@ -61,14 +59,6 @@ class Dispatch(object):
     
     def completed(self):
         self._status = DispatchStatus.DONE
-        sqlConnection = connectToSQLDB()
-        statement = 'UPDATE dispatch SET status = 3 WHERE orderid = %s'
-        cursor = sqlConnection.cursor()
-        cursor.execute(statement, (self._orderid,))
-        cursor.commit()
-        cursor.close()
-        sqlConnection.close()
-        # Update in DB
     
     def asdict(self):
         return self.__dict__
