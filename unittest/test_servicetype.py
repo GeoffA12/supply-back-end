@@ -8,9 +8,9 @@ from enums.servicetype import ServiceType
 class MyTestCase(unittest.TestCase):
     
     def test_stringToEnum(self):
-        enum = ServiceType.translate('dry cleaning')
+        enum = ServiceType.translate('dry_cleaning')
         self.assertEqual(ServiceType.DRY_CLEANING, enum)
-        enum = ServiceType.translate('DRY CLEANING')
+        enum = ServiceType.translate('DRY_CLEANING')
         self.assertEqual(ServiceType.DRY_CLEANING, enum)
         try:
             enum = ServiceType.translate('wqeq')
