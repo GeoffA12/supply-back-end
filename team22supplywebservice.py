@@ -327,6 +327,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                         colVal = float(colVal)
                     elif colName == 'date_added':
                         colVal = colVal.isoformat()
+                    elif colName == 'last_heartbeat':
+                        colVal = str(colVal)
                     vehicleDict[colName] = colVal
                 vehiclesDictList.append(vehicleDict)
 
