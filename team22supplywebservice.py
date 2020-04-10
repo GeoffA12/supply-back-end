@@ -199,8 +199,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     for key, value in postBody.items():
                         if key is 'status':
                             value = VehicleStatus.translate(value).value
-                        elif key is 'last_heartbeat':
-                            value = value[value.indexOf('T') + 1:]
                         statement += f' {key} = %s,'
                         data.append(value)
 
@@ -210,6 +208,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
                     print(statement)
                     print(data)
+
                     cursor.execute(statement, tuple(data))
                     sqlConnection.commit()
 
