@@ -312,8 +312,9 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     fleetIDs = set(paramsDict['fid'])
                     print(fleetIDs)
                     print(rows)
-                    vehicles = [vehicle for fleetID in fleetIDs for vehicle in rows if fleetID == vehicle[3]]
-            
+                    vehicles = [vehicle for fleetID in fleetIDs for vehicle in rows if int(fleetID) == vehicle[3]]
+                    fleetIDs = list(fleetIDs)
+
             print(vehicles)
             
             print(fleetIDs)
