@@ -198,14 +198,18 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     data = []
                     for key, value in postBody.items():
                         if key is 'status':
-                            key = VehicleStatus.translate(value).value
+                            value = VehicleStatus.translate(value).value
+                        elif key is 'last_heartbeat':
+                            value = value[value.indexOf('T') + 1:]
                         statement += f' {key} = %s,'
                         data.append(value)
-            
+
                     statement = statement[:-1]
                     statement += ' WHERE vid = %s'
                     data.append(vid)
-            
+
+                    print(statement)
+                    print(data)
                     cursor.execute(statement, tuple(data))
                     sqlConnection.commit()
 
