@@ -39,7 +39,7 @@ https://supply.team22.softwareengineeringii.com/supply/vehicles?fmid={fleet mast
 **Example API Call:**  
 https://supply.team22.softwareengineeringii.com/supply/vehicles?fmid=komoto415%40gmail.com
 
-### By Fleet ID ![Generic badge](https://img.shields.io/badge/status-Broken-red.svg)
+### By Fleet ID ![Generic badge](https://img.shields.io/badge/status-Stable-green.svg)
 **API Call:**  
 https://supply.team22.softwareengineeringii.com/supply/vehicles?fid={fleet id}  
 **Example API Call:**  
