@@ -492,9 +492,9 @@ def heartbeatListener(fleetid, fmid):
 
                         subject = f'Vehicle ID: {vid} hasn\'t reported in for {round(minutes, 2)}'
                         body = f'Vehicle ID: {vid} hasn\'t reported in for {round(minutes, 2)}'
-                        notifications(recipients=email,
-                                      subject=subject,
-                                      body=body)
+                        # notifications(recipients=email,
+                        #               subject=subject,
+                        #               body=body)
                 else:
                     print('vehicle just added and hasn\'t spun up a heartbeat')
                     # notifications(recipients=email, subject='hi', body='hi')
