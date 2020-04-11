@@ -7,6 +7,7 @@ project_folder = os.path.expanduser('~/supply-backend/utils')  # adjust as appro
 print(os.path)
 load_dotenv(os.path.join(project_folder, '.env'))
 
+
 def connectToSQLDB():
     import mysql.connector as sqldb
     # password = os.getenv('DB_PASSWORD')
@@ -25,7 +26,7 @@ def notifications(recipients, subject, body, sender='noreply@wego.com'):
     print(body)
     # SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY')
     SENDGRID_API_KEY = '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'
-    
+
     message = Mail(
             from_email=sender,
             to_emails=recipients,

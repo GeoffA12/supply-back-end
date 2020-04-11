@@ -3,12 +3,12 @@ from enum import Enum, auto
 
 class ServiceType(Enum):
     ver = '0.2.1'
-    
+
     DRY_CLEANING = 1
     RX = auto()
     COFFEE = auto()
     EVENTS = auto()
-    
+
     @classmethod
     def translate(cls, string):
         name = string.replace(' ', '').lower()

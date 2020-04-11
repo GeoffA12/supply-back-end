@@ -18,34 +18,34 @@ from utils.vehicleutils import getETA, getRoute
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
     ver = '0.5.1'
-    
+
     # How to convert the body from a string to a dictionary
     # use 'loads' to convert from byte/string to a dictionary!
     def getPOSTBody(self):
         length = int(self.headers['content-length'])
         body = self.rfile.read(length)
         return json.loads(body)
-    
+
     def do_POST(self):
         path = self.path
         print(path)
         status = 404
-        
+
         # Pulling in our postbody data and opening up our SQL connection
         postBody = self.getPOSTBody()
         sqlConnection = connectToSQLDB()
         cursor = sqlConnection.cursor(buffered=True)
         responseBody = {}
         print(postBody)
-        
+
         # Endpoint for when an order is submitted to dispatch a vehicle
         if '/vehicleRequest' in path:
             status = 200
-            
+
             # First convert our string into the ServiceType enumerated type
             postBody['serviceType'] = ServiceType.translate(postBody['serviceType'])
             print(postBody['serviceType'])
-            
+
             data = [VehicleStatus.INACTIVE.value, postBody['serviceType'].value, ]
             # print(data)
             # Query all vehicles whose status is INACTIVE and are a part of the fleet whose ServiceType is the
@@ -70,6 +70,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 vehicleEntries = cursor.fetchall()
 
             print(vehicleEntries)
+            # Make a tuple containing all the returned vehicles' current lat, lon and vid
             allPostions = [(x[4], x[5], x[0]) for x in vehicleEntries]
 
             # We are deepcopying so that we reuse and mutate components of our postBody, but also maintain the
@@ -79,13 +80,16 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             # Turn the postBody's destination dictionary into a tupled pair
             destination = dispatchDict.pop('destination')
             dispatchDict['loc_f'] = (destination['lat'], destination['lon'])
+
             LAT_INDEX = 0
             LON_INDEX = 1
+            # Create a dictionary where the keys are vids and the values are the derived ETAs based on the returned
+            # cars' current position to the order's destination
             etas = {vid: getETA(startLat=float(lat),
-                                startLon=float(lon),
-                                endLat=dispatchDict['loc_f'][LAT_INDEX],
-                                endLon=dispatchDict['loc_f'][LON_INDEX])
-                    for lat,lon,vid in allPostions}
+                    startLon=float(lon),
+                    endLat=dispatchDict['loc_f'][LAT_INDEX],
+                    endLon=dispatchDict['loc_f'][LON_INDEX])
+                    for lat, lon, vid in allPostions}
             print(etas)
             fastestVID = sorted(etas.items(), key=lambda x: x[1])[0][0]
             print(fastestVID)
@@ -96,47 +100,51 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             # For now we are just picking the first vehicle of our vehicle list
             vehicle = [vehicle for vehicle in vehicleEntries if vehicle[0] == fastestVID][0]
             print(vehicle)
+
             # Capture vehicle tuple into its separate variables
             vid, licensePlate, make, model, vLat, vLon = vehicle
 
             if not needsToBeQueued:
-                # Now that a vehicle has been assigned, their status will be updated, of course given that they
-                # weren't already active
+                # Now that a vehicle has been assigned their status will be updated, given that they weren't already
+                # active
                 print('updating vehicle status')
                 statement = 'UPDATE vehicles SET status = 1 where vid = %s'
                 cursor.execute(statement, (vid,))
                 sqlConnection.commit()
-            
+
             # Seeing if the unpacking worked d:
             print(vehicle)
-            
+
             print(vid)
             print(licensePlate)
             print(make)
             print(model)
             print(vLon)
             print(vLat)
-            
+
             # Need to convert to float as SQL's return type on floats are Decimal(...)
             vLat = float(vLat)
             vLon = float(vLon)
 
+            # These are added here because until this point we have no idea which vehicle would carry out the order
+            # Everything else in the post body was already almost already how it needed to be to translate directly to
+            # a dispatch dictionary
             dispatchDict['loc_0'] = (vLat, vLon)
             dispatchDict['vid'] = vid
-            
+
             print(dispatchDict)
-            
+
             # Instantiating a dispatch instance
             dispatch = Dispatch(**dispatchDict)
-            
+
             print(dispatch)
-            
+
             data = (
                 dispatch.vid, dispatch.custid, dispatch.orderid,
                 dispatch.loc_0[LAT_INDEX], dispatch.loc_0[LON_INDEX],
                 dispatch.loc_f[LAT_INDEX], dispatch.loc_f[LON_INDEX],
                 dispatch.timeCreated, dispatch.status.value, dispatch.serviceType.value,
-                )
+            )
             # Now to add the new dispatch into the database
             statement = '''INSERT INTO dispatch
                         VALUES (Null, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'''
@@ -156,14 +164,14 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 'curLocation': {
                     'lat': vLat,
                     'lon': vLon
-                    },
+                },
                 'ETA': eta
-                }
+            }
 
             print(vehicleDict)
 
             responseBody = vehicleDict
-        
+
         elif '/addVehicle' in path:
             status = 200
             data = []
@@ -182,20 +190,20 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                         VALUES (Null, %s, %s, %s, %s, %s, %s, %s, %s, %s)'''
             cursor.executemany(statement, data)
             sqlConnection.commit()
-        
+
         elif '/removeVehicle' in path:
             status = 200
             data = [(vid,) for viddict in postBody for vid in viddict.values()]
-            
+
             print(data)
             statement = 'DELETE FROM vehicles WHERE vid = %s'
             cursor.executemany(statement, data)
             sqlConnection.commit()
-        
+
         elif '/updateVehicle' in path:
             allowableUpdates = {'status', 'licenseplate', 'fleetid', 'current_lat', 'current_lon', 'last_heartbeat'}
             status = 401
-            
+
             vidless = deepcopy(postBody)
             vid = vidless.pop('vid')
             if 'vid' in postBody and vidless and set(vidless.keys()).issubset(allowableUpdates):
@@ -211,24 +219,24 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                             value = VehicleStatus.translate(value).value
                         statement += f' {key} = %s,'
                         data.append(value)
-                    
+
                     statement = statement[:-1]
                     statement += ' WHERE vid = %s'
                     data.append(vid)
-                    
+
                     print(statement)
                     print(data)
-                    
+
                     cursor.execute(statement, tuple(data))
                     sqlConnection.commit()
-        
+
         elif '/addFleet' in path:
             status = 200
-            
+
             emailOrUser = postBody['username']
             region = postBody['region']
             serviceType = postBody['serviceType']
-            
+
             # Because fleets utilise a fleet manager id and not their email or username, we'll need to retrieve that
             # first using the incoming username/email. We will support both
             statement = 'SELECT fmid FROM fleetmanagers WHERE email = %s OR username = %s'
@@ -240,7 +248,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             statement = 'INSERT INTO fleets (region, type, fmid) VALUES (%s, %s, %s)'
             cursor.execute(statement, data)
             sqlConnection.commit()
-        
+
         cursor.close()
         sqlConnection.close()
         self.send_response(status)
@@ -248,7 +256,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         res = json.dumps(responseBody)
         bytesStr = res.encode('utf-8')
         self.wfile.write(bytesStr)
-    
+
     def do_GET(self):
         path = self.path
         print(path)
@@ -259,27 +267,27 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         print(paramsDict)
         hasParams = len(paramsDict) != 0
         print(hasParams)
-        
+
         sqlConnection = connectToSQLDB()
         cursor = sqlConnection.cursor(buffered=True)
         responseBody = {}
         '''
         The addition of parameters will apply a filtering process
         '''
-        
+
         if '/vehicleRequest' in path:
             statement = 'SELECT * FROM vehicles'
             cursor.execute(statement)
             rows = cursor.fetchall()
             vehicles = [list(x) for x in rows]
             fleetIDs = list(set([x[3] for x in vehicles]))
-            
+
             # print(vehicles)
             if hasParams:
                 # Parameter for fleet master
                 if 'fmid' in paramsDict:
                     users = paramsDict['fmid']
-                    
+
                     usersCopy = deepcopy(users)
                     users = [(x, x) for x in usersCopy]
                     print(users)
@@ -298,7 +306,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                         print(fleetIDs)
                     print(fleetIDs)
                     vehicles = [vehicle for fleetID in fleetIDs for vehicle in rows if fleetID == vehicle[3]]
-                
+
                 # Parameter for order id
                 # TODO: need to conform to new method of parsing
                 elif 'oid' in paramsDict:
@@ -307,17 +315,17 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                                 FROM dispatch, vehicles
                                 WHERE vehicles.vid = dispatch.vid
                                 AND orderid = %s'''
-                    
+
                     cursor.execute(statement, (oid,))
                     vehicles = cursor.fetchone()
-                
+
                 # Parameter for vehicle id
                 elif 'vid' in paramsDict:
                     vids = set(paramsDict['vid'])
                     print(vids)
                     print(rows)
                     vehicles = [vehicle for vehicleID in vids for vehicle in rows if int(vehicleID) == vehicle[0]]
-                
+
                 elif 'fid' in paramsDict:
                     fleetIDs = set(paramsDict['fid'])
                     print(fleetIDs)
@@ -326,16 +334,16 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     fleetIDs = list(fleetIDs)
 
             print(vehicles)
-            
+
             print(fleetIDs)
             fleets = {
                 'fleets': fleetIDs
-                }
+            }
             print(fleets)
-            
+
             vehicleColsNames = ['vehicleid', 'status', 'licenseplate', 'fleetid', 'make', 'model',
                                 'current_lat', 'current_lon', 'last_heartbeat', 'date_added']
-            
+
             vehiclesDictList = [fleets]
             print(vehiclesDictList)
             for vehicle in vehicles:
@@ -349,45 +357,45 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                         colVal = str(colVal)
                     vehicleDict[colName] = colVal
                 vehiclesDictList.append(vehicleDict)
-            
+
             responseBody = vehiclesDictList
             # print(responseBody)
             status = 200
             for vehicle in responseBody:
                 for k, v in vehicle.items():
                     print(k, v)
-        
+
         elif '/fleets' in path:
             statement = 'SELECT * FROM fleets'
             cursor.execute(statement)
             rows = cursor.fetchall()
             fleets = [list(x) for x in rows]
-            
+
             if hasParams:
                 if 'fmid' in paramsDict:
                     fmids = set(paramsDict['fmid'])
                     fleets = [fm for fmid in fmids for fm in rows if int(fmid) == fm[3]]
-            
+
             fleetColNames = ['fleetid', 'region', 'serviceType', 'fmid']
-            
+
             fleetDictList = []
             for fleet in fleets:
                 fleetDict = {}
                 for colName, colVal, in zip(fleetColNames, fleet):
                     fleetDict[colName] = colVal
                 fleetDictList.append(fleetDict)
-            
+
             responseBody = fleetDictList
             # print(responseBody)
             status = 200
             for fleet in responseBody:
                 for k, v in fleet.items():
                     print(k, v)
-        
+
         elif '/getDispatch' in path:
             vids = paramsDict['vid']
             print(vids)
-            
+
             vidsCopy = deepcopy(vids)
             vids = [(x,) for x in vidsCopy]
             print(vids)
@@ -402,10 +410,10 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 if dispatchTup is not None:
                     temp = [list(x) for x in dispatchTup]
                     dispatches.extend(temp)
-            
+
             print(dispatches)
             dispatchesCopy = deepcopy(dispatches)
-            
+
             dispatches = []
             for dispatch in dispatchesCopy:
                 print('dispatch', dispatch)
@@ -415,25 +423,25 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     'humanReadable': startHuman,
                     'lat': float(startLat),
                     'lon': float(startLon)
-                    }
-                
+                }
+
                 endLat, endLon = dispatch.pop(4), dispatch.pop(4)
                 endHuman = '1234 That Street Ave'
                 endDict = {
                     'humanReadable': endHuman,
                     'lat': float(endLat),
                     'lon': float(endLon)
-                    }
+                }
                 dispatch.insert(4, startDict)
                 dispatch.insert(5, endDict)
                 dispatches.append(dispatch)
-            
+
             print(dispatches)
-            
+
             dispatchColsNames = ['did', 'vid', 'custid', 'orderid',
                                  'startLocation', 'endLocation',
                                  'start_time', 'status', 'serviceType']
-            
+
             dispatchDictList = []
             for dispatch in dispatches:
                 dispatchDict = {}
@@ -442,14 +450,14 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                         colVal = colVal.isoformat()
                     dispatchDict[colName] = colVal
                 dispatchDictList.append(dispatchDict)
-            
+
             responseBody = dispatchDictList
             # print(responseBody)
             status = 200
             for dispatch in responseBody:
                 for k, v in dispatch.items():
                     print(k, v)
-        
+
         cursor.close()
         sqlConnection.close()
         self.send_response(status)
@@ -477,7 +485,7 @@ def heartbeatListener(fleetid, fmid):
     print(f'Listener for Fleet {fleetid} has started')
     sqlConnection = connectToSQLDB()
     cursor = sqlConnection.cursor(buffered=True)
-    
+
     statement = "SELECT email FROM fleetmanagers WHERE fmid = %s"
     cursor.execute(statement, (fmid,))
     email = cursor.fetchone()[0]
@@ -490,14 +498,14 @@ def heartbeatListener(fleetid, fmid):
             time.sleep(CHECKER_INTERVAL)
             sqlConnection = connectToSQLDB()
             cursor = sqlConnection.cursor(buffered=True)
-            
+
             statement = "SELECT vid, last_heartbeat FROM vehicles WHERE fleetid = %s AND status <> 3"
             cursor.execute(statement, (fleetid,))
             rows = cursor.fetchall()
             print(rows)
             cursor.close()
             sqlConnection.close()
-            
+
             d = {k: v for (k, v) in rows}
             for vid, lasthb in d.items():
                 if lasthb is not None:
@@ -507,7 +515,7 @@ def heartbeatListener(fleetid, fmid):
                     print(f'Difference in minutes: {round(minutes, 4)}')
                     if difference > timedelta(minutes=5):
                         print(f'Vehicle ID: {vid} hasn\'t reported in for at least 5 minutes!')
-                        
+
                         subject = f'Vehicle ID: {vid} hasn\'t reported in for {round(minutes, 2)}'
                         body = f'Vehicle ID: {vid} hasn\'t reported in for {round(minutes, 2)}'
                         # notifications(recipients=email,
@@ -516,7 +524,7 @@ def heartbeatListener(fleetid, fmid):
                 else:
                     print('vehicle just added and hasn\'t spun up a heartbeat')
                     # notifications(recipients=email, subject='hi', body='hi')
-    
+
     except KeyboardInterrupt:
         raise
     finally:
