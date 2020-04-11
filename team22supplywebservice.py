@@ -70,7 +70,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 vehicleEntries = cursor.fetchall()
 
             print(vehicleEntries)
-            allPostions = [(x[0], x[4], x[5]) for x in vehicleEntries]
+            allPostions = [(x[4], x[5], x[0]) for x in vehicleEntries]
 
             # We are deepcopying so that we reuse and mutate components of our postBody, but also maintain the
             # postBody's immutability
@@ -81,20 +81,21 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             dispatchDict['loc_f'] = (destination['lat'], destination['lon'])
             LAT_INDEX = 0
             LON_INDEX = 1
-            etas = {x[0]: getETA(startLat=x[LAT_INDEX],
-                                 startLon=x[LON_INDEX],
-                                 endLat=dispatchDict['loc_f'][LAT_INDEX],
-                                 endLon=dispatchDict['loc_f'][LON_INDEX], )
-                    for x in allPostions}
-
-            fastestVID = sorted(etas.items(), key=lambda x: x[1])[0]
+            etas = {vid: getETA(startLat=float(lat),
+                                startLon=float(lon),
+                                endLat=dispatchDict['loc_f'][LAT_INDEX],
+                                endLon=dispatchDict['loc_f'][LON_INDEX])
+                    for lat,lon,vid in allPostions}
+            print(etas)
+            fastestVID = sorted(etas.items(), key=lambda x: x[1])[0][0]
+            print(fastestVID)
 
             if needsToBeQueued:
                 dispatchDict['status'] = DispatchStatus.QUEUED
 
             # For now we are just picking the first vehicle of our vehicle list
-            vehicle = [vehicle for vehicle in vehicleEntries if vehicle[0] is fastestVID]
-
+            vehicle = [vehicle for vehicle in vehicleEntries if vehicle[0] == fastestVID][0]
+            print(vehicle)
             # Capture vehicle tuple into its separate variables
             vid, licensePlate, make, model, vLat, vLon = vehicle
 
