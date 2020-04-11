@@ -13,7 +13,7 @@ from enums.vehiclestatus import VehicleStatus
 from enums.dispatchstatus import DispatchStatus
 from enums.servicetype import ServiceType
 from utils.serverutils import connectToSQLDB, notifications
-from utils.vehicleutils import getEta
+from utils.vehicleutils import getETA, getRoute
 
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
@@ -100,25 +100,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             vLat = float(vLat)
             vLon = float(vLon)
             
-            # Getting our vehicle's eta!
-            eta = getEta()[1]
-            print(eta)
-            
-            # Organising our courier into a dictionary for our response body
-            vehicleDict = {
-                'vid': vid,
-                'licensePlate': licensePlate,
-                'make': make,
-                'model': model,
-                'curLocation': {
-                    'lat': vLat,
-                    'lon': vLon
-                    },
-                'ETA': eta
-                }
-            
-            print(vehicleDict)
-            
             # We are deepcopying so that we reuse and mutate components of our postBody, but also maintain the
             # postBody's immutability
             dispatchDict = deepcopy(postBody)
@@ -151,7 +132,26 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                         VALUES (Null, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'''
             cursor.execute(statement, data)
             sqlConnection.commit()
-            
+
+            # Getting our vehicle's eta!
+            eta = dispatch.getETA(dispatch.loc_0)
+            print(eta)
+
+            # Organising our courier into a dictionary for our response body
+            vehicleDict = {
+                'vid': vid,
+                'licensePlate': licensePlate,
+                'make': make,
+                'model': model,
+                'curLocation': {
+                    'lat': vLat,
+                    'lon': vLon
+                    },
+                'ETA': eta
+                }
+
+            print(vehicleDict)
+
             responseBody = vehicleDict
         
         elif '/addVehicle' in path:
