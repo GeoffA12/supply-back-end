@@ -4,7 +4,6 @@ import threading
 import time
 import urllib.parse as urlparser
 from copy import deepcopy
-from datetime import datetime, timedelta
 from http.server import BaseHTTPRequestHandler
 from urllib.parse import parse_qs
 
@@ -12,7 +11,9 @@ from dispatch import Dispatch
 from enums.vehiclestatus import VehicleStatus
 from enums.dispatchstatus import DispatchStatus
 from enums.servicetype import ServiceType
-from utils.serverutils import connectToSQLDB, notifications
+from utils.serverutils import connectToSQLDB, notifications, healthChecker
+
+()
 from utils.vehicleutils import getETA, getRoute
 
 
@@ -467,68 +468,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(bytesStr)
 
 
-def healthChecker():
-    sqlConnection = connectToSQLDB()
-    cursor = sqlConnection.cursor()
-    statement = 'SELECT fleetid, fmid FROM fleets;'
-    cursor.execute(statement)
-    rows = cursor.fetchall()
-    cursor.close()
-    sqlConnection.close()
-    print(rows)
-    for fleetData in rows:
-        thread = threading.Thread(target=heartbeatListener, args=fleetData)
-        thread.start()
 
-
-def heartbeatListener(fleetid, fmid):
-    print(f'Listener for Fleet {fleetid} has started')
-    sqlConnection = connectToSQLDB()
-    cursor = sqlConnection.cursor(buffered=True)
-
-    statement = "SELECT email FROM fleetmanagers WHERE fmid = %s"
-    cursor.execute(statement, (fmid,))
-    email = cursor.fetchone()[0]
-    cursor.close()
-    sqlConnection.close()
-    CHECKER_INTERVAL = 45
-    missedHeartbeats = {}
-    try:
-        while True:
-            time.sleep(CHECKER_INTERVAL)
-            sqlConnection = connectToSQLDB()
-            cursor = sqlConnection.cursor(buffered=True)
-
-            statement = "SELECT vid, last_heartbeat FROM vehicles WHERE fleetid = %s AND status <> 3"
-            cursor.execute(statement, (fleetid,))
-            rows = cursor.fetchall()
-            print(rows)
-            cursor.close()
-            sqlConnection.close()
-
-            d = {k: v for (k, v) in rows}
-            for vid, lasthb in d.items():
-                if lasthb is not None:
-                    now = datetime.now()
-                    difference = now - lasthb
-                    minutes = difference.seconds / 60
-                    print(f'Difference in minutes: {round(minutes, 4)}')
-                    if difference > timedelta(minutes=5):
-                        print(f'Vehicle ID: {vid} hasn\'t reported in for at least 5 minutes!')
-
-                        subject = f'Vehicle ID: {vid} hasn\'t reported in for {round(minutes, 2)}'
-                        body = f'Vehicle ID: {vid} hasn\'t reported in for {round(minutes, 2)}'
-                        # notifications(recipients=email,
-                        #               subject=subject,
-                        #               body=body)
-                else:
-                    print('vehicle just added and hasn\'t spun up a heartbeat')
-                    # notifications(recipients=email, subject='hi', body='hi')
-
-    except KeyboardInterrupt:
-        raise
-    finally:
-        print(f'Listener for Fleet {fleetid} is ending')
 
 
 def main():
@@ -539,7 +479,6 @@ def main():
     # this next call is blocking! So consult with Devops Coordinator for
     # instructions on how to run without blocking other commands frombeing
     # executed in your terminal!
-    print('I got here')
     healthChecker()
     print('healthChecker initialised')
     httpServer.serve_forever()
@@ -547,6 +486,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-    # print('I got here')
-    # healthChecker()
-    # print('healthChecker initialised')
