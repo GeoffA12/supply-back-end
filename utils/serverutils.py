@@ -6,9 +6,9 @@ import time
 
 ver = '0.4.0'
 
-project_folder = os.path.expanduser('~/supply-backend/utils')  # adjust as appropriate
-print(os.path)
-load_dotenv(os.path.join(project_folder, '.env'))
+# project_folder = os.path.expanduser('~/supply-backend/utils')  # adjust as appropriate
+# print(os.path)
+load_dotenv()
 
 
 def connectToSQLDB():
