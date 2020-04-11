@@ -60,7 +60,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                         AND vehicles.fleetid = fleets.fleetid'''
             cursor.execute(statement, tuple(data))
             vehicleEntries = cursor.fetchall()
-            
+
             # In the case that we have no inactive vehicles, we then ask for the active vehicles and later on,
             # instead of a running dispatch, it will be queued.
             if not vehicleEntries:
@@ -68,22 +68,42 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 data[0] = VehicleStatus.ACTIVE.value
                 cursor.execute(statement, tuple(data))
                 vehicleEntries = cursor.fetchall()
-            
+
             print(vehicleEntries)
-            allPostions = [(x[4], x[5]) for x in vehicleEntries]
-            
+            allPostions = [(x[0], x[4], x[5]) for x in vehicleEntries]
+
+            # We are deepcopying so that we reuse and mutate components of our postBody, but also maintain the
+            # postBody's immutability
+            dispatchDict = deepcopy(postBody)
+
+            # Turn the postBody's destination dictionary into a tupled pair
+            destination = dispatchDict.pop('destination')
+            dispatchDict['loc_f'] = (destination['lat'], destination['lon'])
+            LAT_INDEX = 0
+            LON_INDEX = 1
+            etas = {x[0]: getETA(startLat=x[LAT_INDEX],
+                                 startLon=x[LON_INDEX],
+                                 endLat=dispatchDict['loc_f'][LAT_INDEX],
+                                 endLon=dispatchDict['loc_f'][LON_INDEX], )
+                    for x in allPostions}
+
+            fastestVID = sorted(etas.items(), key=lambda x: x[1])[0]
+
+            if needsToBeQueued:
+                dispatchDict['status'] = DispatchStatus.QUEUED
+
             # For now we are just picking the first vehicle of our vehicle list
-            vehicle = vehicleEntries[0]
-            
+            vehicle = [vehicle for vehicle in vehicleEntries if vehicle[0] is fastestVID]
+
             # Capture vehicle tuple into its separate variables
             vid, licensePlate, make, model, vLat, vLon = vehicle
-            
+
             if not needsToBeQueued:
                 # Now that a vehicle has been assigned, their status will be updated, of course given that they
                 # weren't already active
                 print('updating vehicle status')
-                statement = 'UPDATE vehicles SET status = 1'
-                cursor.execute(statement)
+                statement = 'UPDATE vehicles SET status = 1 where vid = %s'
+                cursor.execute(statement, (vid,))
                 sqlConnection.commit()
             
             # Seeing if the unpacking worked d:
@@ -99,18 +119,9 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             # Need to convert to float as SQL's return type on floats are Decimal(...)
             vLat = float(vLat)
             vLon = float(vLon)
-            
-            # We are deepcopying so that we reuse and mutate components of our postBody, but also maintain the
-            # postBody's immutability
-            dispatchDict = deepcopy(postBody)
-            dispatchDict['vid'] = vid
-            
-            # Turn the postBody's destination dictionary into a tupled pair
-            destination = dispatchDict.pop('destination')
-            dispatchDict['loc_f'] = (destination['lat'], destination['lon'])
+
             dispatchDict['loc_0'] = (vLat, vLon)
-            if needsToBeQueued:
-                dispatchDict['status'] = DispatchStatus.QUEUED
+            dispatchDict['vid'] = vid
             
             print(dispatchDict)
             
@@ -119,8 +130,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             
             print(dispatch)
             
-            LAT_INDEX = 0
-            LON_INDEX = 1
             data = (
                 dispatch.vid, dispatch.custid, dispatch.orderid,
                 dispatch.loc_0[LAT_INDEX], dispatch.loc_0[LON_INDEX],
