@@ -6,3 +6,4 @@ Experimenting/
 *.pyc
 htmlcov/
 *.coverage
+*.env
