@@ -25,8 +25,8 @@ class TestDispatch(unittest.TestCase):
             'custid': 1234567,
             'orderid': 1234,
             'destination': {
-                'lat': 123,
-                'lon': 123
+                'lat': 31,
+                'lon': 12
                 },
             'timeOrderMade': "2020-03-29T13:34:00.000"
             }
@@ -86,7 +86,7 @@ class TestDispatch(unittest.TestCase):
         self.assertEqual(1234567, dispatch.custid)
         self.assertEqual(1234, dispatch.orderid)
         self.assertEqual((23.42, 42.12), dispatch.loc_0)
-        self.assertEqual((123, 123), dispatch.loc_f)
+        self.assertEqual((31, 12), dispatch.loc_f)
         self.assertEqual("2020-03-29T13:34:00.000", dispatch.timeCreated)
         self.assertEqual(DispatchStatus.RUNNING, dispatch.status)
     
