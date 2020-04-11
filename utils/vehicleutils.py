@@ -15,6 +15,7 @@ def getDriverJSON(startLat=None, startLon=None, endLat=None, endLon=None):
 def getRoute(startLat=None, startLon=None, endLat=None, endLon=None):
     # Make request for mapbox driving data given two coordinates
     # encode data
+    # print(data)
     data = getDriverJSON(startLat=startLat,
                          startLon=startLon,
                          endLat=endLat,
@@ -34,10 +35,11 @@ def getETA(startLat=None, startLon=None, endLat=None, endLon=None):
                          endLon=endLon)
     # json dump distance traveled along route data and cast it as a float
     # distance is given in meters
+    print(data)
     distance = float(json.dumps(data.get("routes")[0].get("distance")))
     # calculate mock eta from distance data with mock mph
     eta = ((distance / 1609.34) / 30) * 60
-    # print("ETA IS:", "%.2f" % eta, "MINUTES")
+    print("ETA IS:", "%.2f" % eta, "MINUTES")
     return round(eta, 2)
 
 
@@ -46,17 +48,17 @@ def heartbeat():
     return "healthcheck data"
 
 
-if __name__ == '__main__':
-    startCoor = (30.306963, -97.724208)
-    endCoor = (30.328231, -97.760131)
-    route = getRoute(startLat=startCoor[0],
-                     startLon=startCoor[1],
-                     endLat=endCoor[0],
-                     endLon=endCoor[1])
-    print(route)
+#if __name__ == '__main__':
+    #startCoor = (30.306963, -97.724208)
+    #endCoor = (30.328231, -97.760131)
+    #route = getRoute(startLat=startCoor[0],
+    #                 startLon=startCoor[1],
+    #                 endLat=endCoor[0],
+    #                 endLon=endCoor[1])
+    #print(route)
     
-    eta = getETA(startLat=startCoor[0],
-                 startLon=startCoor[1],
-                 endLat=endCoor[0],
-                 endLon=endCoor[1])
-    print(eta)
+    #eta = getETA(startLat=startCoor[0],
+    #             startLon=startCoor[1],
+    #             endLat=endCoor[0],
+    #             endLon=endCoor[1])
+    #print(eta)
