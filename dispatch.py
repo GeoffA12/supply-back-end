@@ -1,5 +1,6 @@
 from enums.dispatchstatus import DispatchStatus
 from enums.servicetype import ServiceType
+from utils.vehicleutils import getETA, getRoute
 
 
 class Dispatch(object):
@@ -47,22 +48,38 @@ class Dispatch(object):
     @property
     def timeCreated(self):
         return self._timeCreated
-    
+
     @property
     def status(self):
         return self._status
 
+    # TODO Update coverage run
     def getRoute(self, curPos):
+        startLat, startLon = curPos
         print(curPos)
-        # do stuff to get the route
-        return 'my route'
-    
+        print(startLat)
+        print(startLon)
+        print(self._loc_f)
+        route = getRoute(startLat=startLat,
+                         startLon=startLon,
+                         endLat=self._loc_f[0],
+                         endLon=self._loc_f[1])
+        return route
+
+    def getETA(self, curPos):
+        startLat, startLon = curPos
+        eta = getETA(startLat=startLat,
+                     startLon=startLon,
+                     endLat=self._loc_f[0],
+                     endLon=self._loc_f[1])
+        return eta
+
     def completed(self):
         self._status = DispatchStatus.DONE
-    
+
     def asdict(self):
         return self.__dict__
-    
+
     def __repr__(self):
         return f'Dispatch(' \
                f'{self.serviceType}, {self.vid}, {self.custid}, {self.orderid}, ' \
@@ -76,4 +93,5 @@ Order ID: {self.orderid}
 Start Location: {self.loc_0}
 End Location: {self.loc_f}
 Time Order was Placed: {self.timeCreated},
-Dispatch Status: {self.status}'''
+Dispatch Status: {self.status}
+Route: {self._route}'''
