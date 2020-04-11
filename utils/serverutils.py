@@ -93,7 +93,9 @@ def heartbeatListener(fleetid, fmid):
                     difference = now - differenceAsDateTime
                     seconds = difference.total_seconds()
                     minutes = divmod(seconds, 60)[0]
-                    print(f'Difference in minutes: {round(minutes, 4)}')
+                    hours = divmod(seconds, 3600)[0]
+                    differenceStr = f'Difference: {f"{hours} hours and " if hours > 0 else ""}{minutes % 60} minutes'
+                    print(differenceStr)
                     if minutes > 5.0000:
                         print(f'Vehicle ID: {vid} hasn\'t reported in for at least 5 minutes!')
 
