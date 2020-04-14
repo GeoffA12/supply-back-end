@@ -1,7 +1,5 @@
 import http.server
 import json
-import threading
-import time
 import urllib.parse as urlparser
 from copy import deepcopy
 from http.server import BaseHTTPRequestHandler
@@ -12,8 +10,6 @@ from enums.vehiclestatus import VehicleStatus
 from enums.dispatchstatus import DispatchStatus
 from enums.servicetype import ServiceType
 from utils.serverutils import connectToSQLDB, notifications, healthChecker
-
-()
 from utils.vehicleutils import getETA, getRoute
 
 
@@ -40,7 +36,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         print(postBody)
 
         # Endpoint for when an order is submitted to dispatch a vehicle
-        if '/vehicleRequest' in path:
+        if '/supply/vehicles/req' in path:
             status = 200
 
             # First convert our string into the ServiceType enumerated type
@@ -173,7 +169,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
             responseBody = vehicleDict
 
-        elif '/addVehicle' in path:
+        elif '/supply/vehicles/add' in path:
             status = 200
             data = []
             # Because we are support the adding of multiple vehicles into our database in a single request,
@@ -192,8 +188,9 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             cursor.executemany(statement, data)
             sqlConnection.commit()
 
-        elif '/removeVehicle' in path:
+        elif '/supply/vehicles/rem' in path:
             status = 200
+            # Extract the vids from the postBody and store it into a list.
             data = [(vid,) for viddict in postBody for vid in viddict.values()]
 
             print(data)
@@ -201,12 +198,17 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             cursor.executemany(statement, data)
             sqlConnection.commit()
 
-        elif '/updateVehicle' in path:
+        elif '/supply/vehicles/upd' in path:
             allowableUpdates = {'status', 'licenseplate', 'fleetid', 'current_lat', 'current_lon', 'last_heartbeat'}
             status = 401
 
             vidless = deepcopy(postBody)
             vid = vidless.pop('vid')
+
+            # Need to check if the vid is in the postBody bc we won't know what vehicle to update without it
+            # Need to make sure that there are attributes that want to be updated
+            # The desired attributes to be updated must be a part of the set of
+            # attributes that are allowed to be updated
             if 'vid' in postBody and vidless and set(vidless.keys()).issubset(allowableUpdates):
                 statement = 'SELECT * FROM vehicles WHERE vid = %s'
                 cursor.execute(statement, (vid,))
@@ -215,14 +217,18 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     status = 200
                     statement = 'UPDATE vehicles SET'
                     data = []
+
+                    # Building an SQL UPDATE ... SET statement with the desired attributes and their values
                     for key, value in postBody.items():
                         if key is 'status':
                             value = VehicleStatus.translate(value).value
                         statement += f' {key} = %s,'
                         data.append(value)
 
+                    # Pruning the statement for SQL formatting
                     statement = statement[:-1]
                     statement += ' WHERE vid = %s'
+                    # Append vid at the end bc the where clause always goes at the end
                     data.append(vid)
 
                     print(statement)
@@ -231,7 +237,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     cursor.execute(statement, tuple(data))
                     sqlConnection.commit()
 
-        elif '/addFleet' in path:
+        elif '/supply/fleets/add' in path:
             status = 200
 
             emailOrUser = postBody['username']
@@ -276,7 +282,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         The addition of parameters will apply a filtering process
         '''
 
-        if '/vehicleRequest' in path:
+        if '/supply/vehicles' in path:
             statement = 'SELECT * FROM vehicles'
             cursor.execute(statement)
             rows = cursor.fetchall()
@@ -325,6 +331,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     vids = set(paramsDict['vid'])
                     print(vids)
                     print(rows)
+                    # Filter all vehicles until you find the
                     vehicles = [vehicle for vehicleID in vids for vehicle in rows if int(vehicleID) == vehicle[0]]
 
                 elif 'fid' in paramsDict:
@@ -393,7 +400,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 for k, v in fleet.items():
                     print(k, v)
 
-        elif '/getDispatch' in path:
+        elif '/supply/dispatch' in path:
             vids = paramsDict['vid']
             print(vids)
 
