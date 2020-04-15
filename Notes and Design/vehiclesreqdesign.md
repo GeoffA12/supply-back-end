@@ -11,8 +11,7 @@
 |HEAD       |/vehicles    |EXISTS             |No
 
 ## Read Supported Vehicle Resources
-TO BE REFACTORED  
-URI: `/vehicleRequest`
+URI: `/supply/vehicles`
 
 | Parameter | Semantics     |
 |:---       |:---           |
@@ -112,8 +111,7 @@ HTTP Status: 404
 ```
 
 ## Read Supported Dispatch Resources
-TO BE REFACTORED  
-URI: `/getDispatch`
+URI: `/supply/dispatch`
 
 | Parameter | Semantics     |
 |:---       |:---           |
