@@ -1,22 +1,14 @@
 import os
-from dotenv import load_dotenv
 import threading
-from datetime import datetime
 import time
+from datetime import datetime
 
-ver = '0.4.0'
+from databaseutils import connectToSQLDB
+from dotenv import load_dotenv
 
-# project_folder = os.path.expanduser('~/supply-backend/utils')  # adjust as appropriate
-# print(os.path)
+ver = '0.4.1'
+
 load_dotenv()
-
-
-def connectToSQLDB():
-    import mysql.connector as sqldb
-    password = os.getenv('DB_PASSWORD')
-    # password = 'password'
-    # print(f'Password: {password}')
-    return sqldb.connect(user='root', password=password, database='team22supply', port=6022, buffered=True)
 
 
 def notifications(recipients, subject, body, sender='noreply@wego.com'):
@@ -29,7 +21,6 @@ def notifications(recipients, subject, body, sender='noreply@wego.com'):
     print(body)
 
     SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY')
-    # SENDGRID_API_KEY = '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'
 
     message = Mail(
             from_email=sender,
@@ -110,5 +101,3 @@ def heartbeatListener(fleetid, fmid):
 
     except KeyboardInterrupt:
         raise
-    finally:
-        print(f'Listener for Fleet {fleetid} is ending')
