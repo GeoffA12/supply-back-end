@@ -3,7 +3,7 @@ import threading
 import time
 from datetime import datetime
 
-from databaseutils import connectToSQLDB
+from utils.databaseutils import connectToSQLDB
 from dotenv import load_dotenv
 
 ver = '0.4.1'
