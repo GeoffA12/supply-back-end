@@ -177,7 +177,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                          30.2264, -97.7553, None, vehicleDict['dateAdded'].replace('T', ' ').replace('Z', ' '))
                 vehicleData.append(entry)
             # print(vehicleData)
-            databaseutils.addVehicles(vehicleData)
+            databaseutils.addVehicle(vehicleData)
             # statement = 'INSERT INTO vehicles VALUES (Null, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
             # cursor.executemany(statement, vehicleData)
             # sqlConnection.commit()
@@ -188,7 +188,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             vehicleData = [(vid,) for viddict in postBody for vid in viddict.values()]
 
             # print(vehicleData)
-            databaseutils.delVehicles(vehicleData)
+            databaseutils.delVehicle(vehicleData)
             # statement = 'DELETE FROM vehicles WHERE vid = %s'
             # cursor.executemany(statement, vehicleData)
             # sqlConnection.commit()
