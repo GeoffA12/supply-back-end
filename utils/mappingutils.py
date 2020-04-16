@@ -1,6 +1,7 @@
 import requests
 import json
 
+ver = '0.1.0'
 
 def getDriverJSON(startLat=None, startLon=None, endLat=None, endLon=None):
     token = 'pk.eyJ1IjoiY3N5Y2hldiIsImEiOiJjazZsbmg4c2gwYXU3M21zOG55aTljcTBuIn0.G5UXjF-3_0mXKo6huFgLwg'

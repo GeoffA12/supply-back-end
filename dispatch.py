@@ -1,10 +1,10 @@
 from enums.dispatchstatus import DispatchStatus
 from enums.servicetype import ServiceType
-from utils.vehicleutils import getETA, getRoute
+from utils.mappingutils import getETA, getRoute
 
 
 class Dispatch(object):
-    ver = '0.5.0'
+    ver = '0.5.1'
 
     def __init__(self, serviceType, vid, custid, orderid, loc_0, loc_f, timeOrderMade, status=DispatchStatus.RUNNING):
         assert type(serviceType) is ServiceType
