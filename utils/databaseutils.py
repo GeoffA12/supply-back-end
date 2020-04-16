@@ -4,14 +4,6 @@ load_dotenv()
 ver = '0.1.0'
 
 
-def fetch(con, cursor):
-    cur = {
-        'one': cursor.fetchone(),
-        'many': cursor.fetchmany(),
-    }
-    return cur.get(con, cursor.fetchall())
-
-
 def connectToSQLDB():
     import os
     import mysql.connector as sqldb

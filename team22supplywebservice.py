@@ -475,9 +475,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(bytesStr)
 
 
-
-
-
 def main():
     port = 4022
     # Create an http server using the class and port you defined
