@@ -8,6 +8,7 @@ import utils.databaseutils as databaseutils
 
 from utils.serverutils import notifications, healthChecker
 from enums.vehiclestatus import VehicleStatus
+from dispatch import Dispatch
 
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
@@ -89,6 +90,20 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     print(vehicleData)
 
                     databaseutils.updVehicle(statement, vehicleData)
+
+                    if 'last_heartbeat' in postBody.keys():
+                        dispatchTup = databaseutils.getRunningDispatchByVID(vid)
+                        dispatchDict = {
+                            'serviceType': dispatchTup[10],
+                            'vid': dispatchTup[1],
+                            'custid': dispatchTup[2],
+                            'orderid': dispatchTup[3],
+                            'loc_0': (float(dispatchTup[4]), float(dispatchTup[5]),),
+                            'loc_f': (float(dispatchTup[6]), float(dispatchTup[7])),
+                            'timeCreate': dispatchTup[8],
+                        }
+                        dispatch = Dispatch(**dispatchDict)
+                        responseBody = [dispatchTup[0], dispatch.route]
 
         elif '/supply/fleets/add' in path:
             status = 200
