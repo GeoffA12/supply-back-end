@@ -52,6 +52,10 @@ class Dispatch(object):
     def status(self):
         return self._status
 
+    @property
+    def route(self):
+        return self._route
+
     # TODO Update coverage run
     def getRoute(self, curPos):
         startLat, startLon = curPos
