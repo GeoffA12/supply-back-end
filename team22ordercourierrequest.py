@@ -59,7 +59,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             print(vehicleEntries)
             # Make a tuple containing all the returned vehicles' current lat, lon and vid
             allPostions = [(float(x[4]), float(x[5]), x[0]) for x in vehicleEntries]
-
+            print(allPostions)
             # We are deepcopying so that we reuse and mutate components of our postBody, but also maintain the
             # postBody's immutability
             dispatchDict = deepcopy(postBody)
