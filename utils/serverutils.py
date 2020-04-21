@@ -24,7 +24,6 @@ def notifications(recipients, subject, body, sender='noreply@wego.com'):
     print(subject)
     print(body)
     # SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY')
-    SENDGRID_API_KEY = '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'
     
     message = Mail(
             from_email=sender,
