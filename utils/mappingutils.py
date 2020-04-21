@@ -32,13 +32,16 @@ def getETA(startLat=None, startLon=None, endLat=None, endLon=None):
     # Make request for mapbox driving data given two coordinates
     # encode data
     data = getDriverJSON(startLat=startLat,
-            startLon=startLon,
-            endLat=endLat,
-            endLon=endLon)
+                         startLon=startLon,
+                         endLat=endLat,
+                         endLon=endLon)
     # json dump distance traveled along route data and cast it as a float
     # distance is given in meters
-    print(data)
-    distance = float(json.dumps(data.get("routes")[0].get("distance")))
+    # print(data)
+    try:
+        distance = float(json.dumps(data.get("routes")[0].get("distance")))
+    except:
+        distance = 1_000_000_000
     # calculate mock eta from distance data with mock mph
     eta = ((distance / 1609.34) / 30) * 60
     print("ETA IS:", "%.2f" % eta, "MINUTES")
