@@ -4,18 +4,14 @@ import urllib.parse as urlparser
 from copy import deepcopy
 from http.server import BaseHTTPRequestHandler
 from urllib.parse import parse_qs
-
-from dispatch import Dispatch
-from enums.vehiclestatus import VehicleStatus
-from enums.dispatchstatus import DispatchStatus
-from enums.servicetype import ServiceType
-from utils.serverutils import notifications, healthChecker
-from utils.mappingutils import getETA, getRoute
 import utils.databaseutils as databaseutils
+
+from utils.serverutils import notifications, healthChecker
+from enums.vehiclestatus import VehicleStatus
 
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
-    ver = '0.5.3'
+    ver = '0.5.4'
 
     # How to convert the body from a string to a dictionary
     # use 'loads' to convert from byte/string to a dictionary!
@@ -31,139 +27,10 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
         # Pulling in our postbody data and opening up our SQL connection
         postBody = self.getPOSTBody()
-        # sqlConnection = databaseutils.connectToSQLDB()
-        # cursor = sqlConnection.cursor(buffered=True)
         responseBody = {}
         print(postBody)
 
-        # Endpoint for when an order is submitted to dispatch a vehicle
-        if '/supply/vehicles/req' in path:
-            status = 200
-
-            # First convert our string into the ServiceType enumerated type
-            postBody['serviceType'] = ServiceType.translate(postBody['serviceType'])
-            print(postBody['serviceType'])
-
-            desiredVehicleAttributes = [VehicleStatus.INACTIVE.value, postBody['serviceType'].value, ]
-            # print(desiredVehicleAttributes)
-            # Query all vehicles whose status is INACTIVE and are a part of the fleet whose ServiceType is the
-            # incoming order's service type
-            # We need a switch here to know whether our dispatch should be inserted as QUEUED or RUNNING for the case
-            # were there are no INACTIVE vehicles to pick up the order
-            vehicleEntries = databaseutils.getCourierCandidates(desiredVehicleAttributes)
-
-            needsToBeQueued = False
-            # In the case that we have no inactive vehicles, we then ask for the active vehicles and later on,
-            # instead of a running dispatch, it will be queued.
-            if not vehicleEntries:
-                needsToBeQueued = True
-                desiredVehicleAttributes[0] = VehicleStatus.ACTIVE.value
-                vehicleEntries = databaseutils.getCourierCandidates(desiredVehicleAttributes)
-
-            print(vehicleEntries)
-            # Make a tuple containing all the returned vehicles' current lat, lon and vid
-            allPostions = [(float(x[4]), float(x[5]), x[0]) for x in vehicleEntries]
-
-            # We are deepcopying so that we reuse and mutate components of our postBody, but also maintain the
-            # postBody's immutability
-            dispatchDict = deepcopy(postBody)
-
-            # Turn the postBody's destination dictionary into a tupled pair
-            destination = dispatchDict.pop('destination')
-            dispatchDict['loc_f'] = (destination['lat'], destination['lon'])
-
-            LAT_INDEX = 0
-            LON_INDEX = 1
-            # Create a dictionary where the keys are vids and the values are the derived ETAs based on the returned
-            # cars' current position to the order's destination
-            etas = {vid: getETA(startLat=lat,
-                    startLon=lon,
-                    endLat=dispatchDict['loc_f'][LAT_INDEX],
-                    endLon=dispatchDict['loc_f'][LON_INDEX])
-                    for lat, lon, vid in allPostions}
-            print(etas)
-            fastestVID = sorted(etas.items(), key=lambda x: x[1])[0][0]
-            print(fastestVID)
-
-            if needsToBeQueued:
-                dispatchDict['status'] = DispatchStatus.QUEUED
-
-            # For now we are just picking the first vehicle of our vehicle list
-            vehicle = [vehicle for vehicle in vehicleEntries if vehicle[0] == fastestVID][0]
-            print(vehicle)
-
-            # Capture vehicle tuple into its separate variables
-            vid, licensePlate, make, model, vLat, vLon = vehicle
-
-            if not needsToBeQueued:
-                # Now that a vehicle has been assigned their status will be updated, given that they weren't already
-                # active
-                databaseutils.updateVehicleStatus(vid)
-                # statement = 'UPDATE vehicles SET status = 1 where vid = %s'
-                # cursor.execute(statement, (vid,))
-                # sqlConnection.commit()
-
-            # Seeing if the unpacking worked d:
-            print(vehicle)
-
-            print(vid)
-            print(licensePlate)
-            print(make)
-            print(model)
-            print(vLon)
-            print(vLat)
-
-            # Need to convert to float as SQL's return type on floats are Decimal(...)
-            # vLat = float(vLat)
-            # vLon = float(vLon)
-
-            # These are added here because until this point we have no idea which vehicle would carry out the order
-            # Everything else in the post body was already almost already how it needed to be to translate directly to
-            # a dispatch dictionary
-            dispatchDict['loc_0'] = (vLat, vLon)
-            dispatchDict['vid'] = vid
-
-            print(dispatchDict)
-
-            # Instantiating a dispatch instance
-            dispatch = Dispatch(**dispatchDict)
-
-            print(dispatch)
-
-            dispatchData = (
-                dispatch.vid, dispatch.custid, dispatch.orderid,
-                dispatch.loc_0[LAT_INDEX], dispatch.loc_0[LON_INDEX],
-                dispatch.loc_f[LAT_INDEX], dispatch.loc_f[LON_INDEX],
-                dispatch.timeCreated, dispatch.status.value, dispatch.serviceType.value,
-            )
-            # Now to add the new dispatch into the database
-            databaseutils.storeDispatch(dispatchData)
-            # statement = 'INSERT INTO dispatch VALUES (Null, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
-            # cursor.execute(statement, dispatchData)
-            # sqlConnection.commit()
-
-            # Getting our vehicle's eta!
-            eta = dispatch.getETA(dispatch.loc_0)
-            print(eta)
-
-            # Organising our courier into a dictionary for our response body
-            vehicleDict = {
-                'vid': vid,
-                'licensePlate': licensePlate,
-                'make': make,
-                'model': model,
-                'curLocation': {
-                    'lat': vLat,
-                    'lon': vLon
-                },
-                'ETA': eta
-            }
-
-            print(vehicleDict)
-
-            responseBody = vehicleDict
-
-        elif '/supply/vehicles/add' in path:
+        if '/supply/vehicles/add' in path:
             status = 200
             vehicleData = []
             # Because we are support the adding of multiple vehicles into our database in a single request,
@@ -178,9 +45,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 vehicleData.append(entry)
             # print(vehicleData)
             databaseutils.addVehicle(vehicleData)
-            # statement = 'INSERT INTO vehicles VALUES (Null, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
-            # cursor.executemany(statement, vehicleData)
-            # sqlConnection.commit()
 
         elif '/supply/vehicles/rem' in path:
             status = 200
@@ -189,9 +53,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
             # print(vehicleData)
             databaseutils.delVehicle(vehicleData)
-            # statement = 'DELETE FROM vehicles WHERE vid = %s'
-            # cursor.executemany(statement, vehicleData)
-            # sqlConnection.commit()
 
         elif '/supply/vehicles/upd' in path:
             allowableUpdates = {'status', 'licenseplate', 'fleetid', 'current_lat', 'current_lon', 'last_heartbeat'}
@@ -206,9 +67,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             # attributes that are allowed to be updated
             if 'vid' in postBody and vidless and set(vidless.keys()).issubset(allowableUpdates):
                 entry = databaseutils.getVehicleByVID(vid)
-                # statement = 'SELECT * FROM vehicles WHERE vid = %s'
-                # cursor.execute(statement, (vid,))
-                # entry = cursor.fetchone()[0]
                 if entry:
                     status = 200
                     statement = 'UPDATE vehicles SET'
@@ -242,19 +100,10 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             # Because fleets utilise a fleet manager id and not their email or username, we'll need to retrieve that
             # first using the incoming username/email. We will support both
             fmid = databaseutils.getFMID(emailOrUser)
-            # statement = 'SELECT fmid FROM fleetmanagers WHERE email = %s OR username = %s'
-            # data = (emailOrUser, emailOrUser,)
-            # cursor.execute(statement, data)
-            # fmid = cursor.fetchone()[0]
             fleetData = (region, serviceType, fmid,)
             print(fleetData)
             databaseutils.addFleet(fleetData)
-            # statement = 'INSERT INTO fleets VALUES (Null, %s, %s, %s)'
-            # cursor.execute(statement, fleetData)
-            # sqlConnection.commit()
 
-        # cursor.close()
-        # sqlConnection.close()
         self.send_response(status)
         self.end_headers()
         res = json.dumps(responseBody)
@@ -272,17 +121,12 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         hasParams = len(paramsDict) != 0
         print(hasParams)
 
-        # sqlConnection = databaseutils.connectToSQLDB()
-        # cursor = sqlConnection.cursor(buffered=True)
         responseBody = {}
         '''
         The addition of parameters will apply a filtering process
         '''
 
         if '/supply/vehicles' in path:
-            # statement = 'SELECT * FROM vehicles'
-            # cursor.execute(statement)
-            # rows = cursor.fetchall()
             rows = databaseutils.getAllVehicles()
             vehicles = [list(x) for x in rows]
             fleetIDs = list(set([x[3] for x in vehicles]))
@@ -296,20 +140,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     usersCopy = deepcopy(users)
                     users = [(x, x) for x in usersCopy]
                     print(users)
-                    # statement = '''SELECT fleets.fleetid
-                    #             FROM fleets, fleetmanagers
-                    #             WHERE fleets.fmid = fleetmanagers.fmid
-                    #             AND (fleetmanagers.username = %s
-                    #             OR fleetmanagers.email = %s)'''
-                    # fleetIDs = []
-                    # for user in users:
-                    #     cursor.execute(statement, user)
-                    #     temp = cursor.fetchall()
-                    #     flatten = [item for sublist in temp for item in sublist]
-                    #     print(flatten)
-                    #     fleetIDs.extend(flatten)d
-                    #     print(fleetIDs)
-                    # print(fleetIDs)
                     fleetIDs = (databaseutils.getFleetIDByFMCredentials(users))
                     vehicles = [vehicle for fleetID in set(fleetIDs) for vehicle in rows if fleetID == vehicle[3]]
 
@@ -368,14 +198,11 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             responseBody = vehiclesDictList
             # print(responseBody)
             status = 200
-            for vehicle in responseBody:
-                for k, v in vehicle.items():
-                    print(k, v)
+            # for vehicle in responseBody:
+            #     for k, v in vehicle.items():
+            #         print(k, v)
 
-        elif '/fleets' in path:
-            # statement = 'SELECT * FROM fleets'
-            # cursor.execute(statement)
-            # rows = cursor.fetchall()
+        elif '/supply/fleets' in path:
             rows = databaseutils.getAllFleets()
             fleets = [list(x) for x in rows]
 
@@ -396,9 +223,9 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             responseBody = fleetDictList
             # print(responseBody)
             status = 200
-            for fleet in responseBody:
-                for k, v in fleet.items():
-                    print(k, v)
+            # for fleet in responseBody:
+            #     for k, v in fleet.items():
+            #         print(k, v)
 
         elif '/supply/dispatch' in path:
             vids = paramsDict['vid']
@@ -407,17 +234,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             vidsCopy = deepcopy(vids)
             vids = [(x,) for x in vidsCopy]
             print(vids)
-            # statement = '''SELECT * FROM dispatch WHERE vid = %s'''
-            # print(statement)
-            # dispatches = []
-            # for vid in vids:
-            #     cursor = sqlConnection.cursor()
-            #     cursor.execute(statement, vid)
-            #     dispatchTup = cursor.fetchall()
-            #     print('tup:', dispatchTup)
-            #     if dispatchTup is not None:
-            #         temp = [list(x) for x in dispatchTup]
-            #         dispatches.extend(temp)
             dispatches = databaseutils.getDispatchByVID(vids)
             print(dispatches)
             dispatchesCopy = deepcopy(dispatches)
@@ -462,9 +278,9 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             responseBody = dispatchDictList
             # print(responseBody)
             status = 200
-            for dispatch in responseBody:
-                for k, v in dispatch.items():
-                    print(k, v)
+            # for dispatch in responseBody:
+            #     for k, v in dispatch.items():
+            #         print(k, v)
 
         # cursor.close()
         # sqlConnection.close()
