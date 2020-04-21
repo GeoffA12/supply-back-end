@@ -79,10 +79,10 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     endLon=dispatchDict['loc_f'][LON_INDEX])
                 for lat, lon, vid in allPostions}
             print(etas)
-            fastestVID = sorted(etas.items(), key=lambda x: x[1])[0][0]
-            # fastestVID, eta = sorted(etas.items(), key=lambda x: x[1])[0]
+            # fastestVID = sorted(etas.items(), key=lambda x: x[1])[0][0]
+            fastestVID, eta = sorted(etas.items(), key=lambda x: x[1])[0]
             print(fastestVID)
-
+            print(eta)
             if needsToBeQueued:
                 dispatchDict['status'] = DispatchStatus.QUEUED
 
@@ -136,8 +136,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             databaseutils.storeDispatch(dispatchData)
 
             # Getting our vehicle's eta!
-            eta = dispatch.getETA(dispatch.loc_0)
-            print(eta)
+            # eta = dispatch.getETA(dispatch.loc_0)
+            # print(eta)
 
             # Organising our courier into a dictionary for our response body
             vehicleDict = {
