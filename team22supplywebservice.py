@@ -93,7 +93,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
                     if 'last_heartbeat' in postBody.keys():
                         dispatchTup = databaseutils.getRunningDispatchByVID(vid)
-                        if dispatchTup:
+                        if dispatchTup is not None:
+                            dispatchTup = dispatchTup[0]
                             dispatchDict = {
                                 'serviceType': dispatchTup[10],
                                 'vid': dispatchTup[1],
