@@ -74,7 +74,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     vehicleData = []
 
                     # Building an SQL UPDATE ... SET statement with the desired attributes and their values
-                    for col, colVal in postBody.items():
+                    for col, colVal in vidless.items():
                         if col is 'status':
                             colVal = VehicleStatus.translate(colVal).value
                         statement += f' {col} = %s,'
