@@ -80,6 +80,8 @@ def heartbeatListener(fleetid, fmid):
             for vid, lasthb in d.items():
                 if lasthb is not None:
                     now = datetime.now()
+                    print(lasthb)
+                    print(now)
                     differenceAsDateTime = now - lasthb
                     difference = now - differenceAsDateTime
                     seconds = difference.total_seconds()
@@ -92,6 +94,7 @@ def heartbeatListener(fleetid, fmid):
 
                         subject = f'Vehicle ID: {vid} hasn\'t reported in for {round(minutes, 2)}'
                         body = f'Vehicle ID: {vid} hasn\'t reported in for {round(minutes, 2)}'
+                        print(subject)
                         # notifications(recipients=email,
                         #               subject=subject,
                         #               body=body)
