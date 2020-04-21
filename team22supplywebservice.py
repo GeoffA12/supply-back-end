@@ -144,18 +144,17 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         if '/supply/vehicles' in path:
             rows = databaseutils.getAllVehicles()
             vehicles = [list(x) for x in rows]
-            fleetIDs = list(set([x[3] for x in vehicles]))
 
             # print(vehicles)
             if hasParams:
                 # Parameter for fleet master
-                if 'fmid' in paramsDict:
-                    users = paramsDict['fmid']
+                if 'user' in paramsDict:
+                    users = paramsDict['user']
 
                     usersCopy = deepcopy(users)
                     users = [(x, x) for x in usersCopy]
                     print(users)
-                    fleetIDs = (databaseutils.getFleetIDByFMCredentials(users))
+                    fleetIDs = databaseutils.getFleetIDByFMCredentials(users)
                     vehicles = [vehicle for fleetID in set(fleetIDs) for vehicle in rows if fleetID == vehicle[3]]
 
                 # Parameter for order id
@@ -183,20 +182,13 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     print(fleetIDs)
                     print(rows)
                     vehicles = [vehicle for fleetID in fleetIDs for vehicle in rows if int(fleetID) == vehicle[3]]
-                    fleetIDs = list(fleetIDs)
 
             print(vehicles)
-
-            print(fleetIDs)
-            fleets = {
-                'fleets': fleetIDs
-            }
-            print(fleets)
 
             vehicleColsNames = ['vehicleid', 'status', 'licenseplate', 'fleetid', 'make', 'model',
                                 'current_lat', 'current_lon', 'last_heartbeat', 'date_added']
 
-            vehiclesDictList = [fleets]
+            vehiclesDictList = []
             print(vehiclesDictList)
             for vehicle in vehicles:
                 vehicleDict = {}
@@ -222,9 +214,15 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             fleets = [list(x) for x in rows]
 
             if hasParams:
-                if 'fmid' in paramsDict:
+                if 'user' in paramsDict:
+                    users = paramsDict['user']
+                    `
+                    fleetIDs = databaseutils.getFleetIDByFMCredentials(users)
+                    fleets = [fleet for fleetID in set(fleetIDs) for fleet in rows if int(fleetID) == fleet[0]]
+
+                elif 'fmid' in paramsDict:
                     fmids = set(paramsDict['fmid'])
-                    fleets = [fm for fmid in fmids for fm in rows if int(fmid) == fm[3]]
+                    fleets = [fleet for fmid in fmids for fleet in rows if int(fmid) == fleet[3]]
 
             fleetColNames = ['fleetid', 'region', 'serviceType', 'fmid']
 
