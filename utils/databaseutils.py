@@ -200,3 +200,26 @@ def getDispatchByVID(vids):
     sqlConnection.close()
 
     return dispatches
+
+
+def getRunningDispatchByVID(vid):
+    sqlConnection = connectToSQLDB()
+    cursor = sqlConnection.cursor()
+
+    statement = '''SELECT * FROM dispatch WHERE status = 2 AND vid = %s'''
+    print(statement)
+    cursor.execute(statement, (vid,))
+    dispatch = cursor.fetchone()[0]
+    # dispatches = []
+    # for vid in vids:
+    #     cursor.execute(statement, vid)
+    #     dispatchTup = cursor.fetchall()
+    #     print('tup:', dispatchTup)
+    #     if dispatchTup is not None:
+    #         temp = [list(x) for x in dispatchTup]
+    #         dispatches.extend(temp)
+
+    cursor.close()
+    sqlConnection.close()
+
+    return dispatch
