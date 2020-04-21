@@ -216,7 +216,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             if hasParams:
                 if 'user' in paramsDict:
                     users = paramsDict['user']
-                    `
                     fleetIDs = databaseutils.getFleetIDByFMCredentials(users)
                     fleets = [fleet for fleetID in set(fleetIDs) for fleet in rows if int(fleetID) == fleet[0]]
 
