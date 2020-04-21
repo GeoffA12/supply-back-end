@@ -216,6 +216,9 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             if hasParams:
                 if 'user' in paramsDict:
                     users = paramsDict['user']
+
+                    usersCopy = deepcopy(users)
+                    users = [(x, x) for x in usersCopy]
                     fleetIDs = databaseutils.getFleetIDByFMCredentials(users)
                     fleets = [fleet for fleetID in set(fleetIDs) for fleet in rows if int(fleetID) == fleet[0]]
 
