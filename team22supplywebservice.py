@@ -111,6 +111,9 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                                 'timeOrderMade': dispatchTup[8],
                             }
                             dispatch = Dispatch(**dispatchDict)
+                            print((vidless['current_lat'], vidless['current_lon'],))
+                            print(dispatch.loc_0)
+                            print(dispatch.route)
                             responseBody = [dispatchTup[0], dispatch.route]
 
         elif '/supply/fleets/add' in path:
