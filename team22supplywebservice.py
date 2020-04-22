@@ -97,9 +97,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                         if dispatchTup is not None:
                             service = dispatchTup[10]
                             print(service)
-                            if service == 'drycleaning':
-                                service = 'DRY_CLEANING'
-                            print(service)
                             # dispatchTup = dispatchTup[0]
                             dispatchDict = {
                                 'serviceType': ServiceType.translate(service),
