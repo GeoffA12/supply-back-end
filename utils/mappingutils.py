@@ -15,6 +15,7 @@ def getDriverJSON(startLat=None, startLon=None, endLat=None, endLon=None):
 
 # route request API
 def getRoute(startLat=None, startLon=None, endLat=None, endLon=None):
+    import ast
     # Make request for mapbox driving data given two coordinates
     # encode data
     # print(data)
@@ -24,7 +25,7 @@ def getRoute(startLat=None, startLon=None, endLat=None, endLon=None):
             endLon=endLon)
     # json dump coordinates data
     coords = json.dumps(data.get("routes")[0].get("geometry").get("coordinates"))
-    return coords
+    return ast.literal_eval(coords)
 
 
 # eta request API
