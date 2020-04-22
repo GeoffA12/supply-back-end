@@ -8,6 +8,7 @@ import utils.databaseutils as databaseutils
 
 from utils.serverutils import notifications, healthChecker
 from enums.vehiclestatus import VehicleStatus
+from enums.servicetype import ServiceType
 from dispatch import Dispatch
 
 
@@ -94,15 +95,20 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     if 'last_heartbeat' in postBody.keys():
                         dispatchTup = databaseutils.getRunningDispatchByVID(vid)
                         if dispatchTup is not None:
-                            dispatchTup = dispatchTup[0]
+                            service = dispatchTup[10]
+                            print(service)
+                            if service == 'drycleaning':
+                                service = 'DRY_CLEANING'
+                            print(service)
+                            # dispatchTup = dispatchTup[0]
                             dispatchDict = {
-                                'serviceType': dispatchTup[10],
+                                'serviceType': ServiceType.translate(service),
                                 'vid': dispatchTup[1],
                                 'custid': dispatchTup[2],
                                 'orderid': dispatchTup[3],
-                                'loc_0': (float(dispatchTup[4]), float(dispatchTup[5]),),
+                                'loc_0': (vidless['current_lat'], vidless['current_lon'],),
                                 'loc_f': (float(dispatchTup[6]), float(dispatchTup[7])),
-                                'timeCreate': dispatchTup[8],
+                                'timeOrderMade': dispatchTup[8],
                             }
                             dispatch = Dispatch(**dispatchDict)
                             responseBody = [dispatchTup[0], dispatch.route]
