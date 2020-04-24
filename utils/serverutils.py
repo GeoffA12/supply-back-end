@@ -1,7 +1,5 @@
 import os
 import threading
-import time
-from datetime import datetime, timedelta
 
 from utils.databaseutils import connectToSQLDB
 from dotenv import load_dotenv
@@ -52,6 +50,9 @@ def healthChecker():
 
 
 def heartbeatListener(fleetid, fmid):
+    import time
+    from datetime import datetime, timedelta
+
     from pytz import timezone
     print(f'Listener for Fleet {fleetid} has started')
     sqlConnection = connectToSQLDB()
@@ -86,14 +87,14 @@ def heartbeatListener(fleetid, fmid):
                     lasthb = lasthb.astimezone(timezone('UTC'))
                     print(vid, lasthb)
                     print(now - lasthb)
-                    difference = now -lasthb
+                    difference = now - lasthb
                     print(type(difference))
 
                     if difference > timedelta(minutes=5.00):
                         print(f'Vehicle ID: {vid} hasn\'t reported in for at least 5 minutes!')
                         days = difference.days
-                        hours = difference.seconds//3600
-                        minutes = (difference.seconds//60)%60
+                        hours = difference.seconds // 3600
+                        minutes = (difference.seconds // 60) % 60
                         print(days, hours, minutes)
 
                         subject = f'Vehicle ID: {vid} has missed a heartbeat'
