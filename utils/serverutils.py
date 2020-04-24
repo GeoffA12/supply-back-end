@@ -1,7 +1,7 @@
 import os
 import threading
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from utils.databaseutils import connectToSQLDB
 from dotenv import load_dotenv
@@ -52,6 +52,7 @@ def healthChecker():
 
 
 def heartbeatListener(fleetid, fmid):
+    from pytz import timezone
     print(f'Listener for Fleet {fleetid} has started')
     sqlConnection = connectToSQLDB()
     cursor = sqlConnection.cursor(buffered=True)
@@ -61,7 +62,7 @@ def heartbeatListener(fleetid, fmid):
     email = cursor.fetchone()[0]
     cursor.close()
     sqlConnection.close()
-    CHECKER_INTERVAL = 45
+    CHECKER_INTERVAL = 10
     missedHeartbeats = {}
     try:
         while True:
@@ -79,18 +80,21 @@ def heartbeatListener(fleetid, fmid):
             d = {k: v for (k, v) in rows}
             for vid, lasthb in d.items():
                 if lasthb is not None:
-                    now = datetime.now()
-                    print(lasthb)
+                    now = datetime.now(timezone('UTC'))
+                    print(vid, lasthb)
                     print(now)
-                    differenceAsDateTime = now - lasthb
-                    difference = now - differenceAsDateTime
-                    seconds = difference.total_seconds()
-                    minutes = divmod(seconds, 60)[0]
-                    hours = divmod(seconds, 3600)[0]
-                    differenceStr = f'Difference: {f"{hours} hours and " if hours > 0 else ""}{minutes % 60} minutes'
-                    print(differenceStr)
-                    if minutes > 5.0000:
+                    lasthb = lasthb.astimezone(timezone('UTC'))
+                    print(vid, lasthb)
+                    print(now - lasthb)
+                    difference = now -lasthb
+                    print(type(difference))
+
+                    if difference > timedelta(minutes=5.00):
                         print(f'Vehicle ID: {vid} hasn\'t reported in for at least 5 minutes!')
+                        days = difference.days
+                        hours = difference.seconds//3600
+                        minutes = (difference.seconds//60)%60
+                        print(days, hours, minutes)
 
                         subject = f'Vehicle ID: {vid} has missed a heartbeat'
                         body = f'Vehicle ID: {vid} hasn\'t reported in for ' \
