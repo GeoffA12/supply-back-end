@@ -92,9 +92,11 @@ def heartbeatListener(fleetid, fmid):
                     if minutes > 5.0000:
                         print(f'Vehicle ID: {vid} hasn\'t reported in for at least 5 minutes!')
 
-                        subject = f'Vehicle ID: {vid} hasn\'t reported in for {round(minutes, 2)}'
-                        body = f'Vehicle ID: {vid} hasn\'t reported in for {round(minutes, 2)}'
+                        subject = f'Vehicle ID: {vid} has missed a heartbeat'
+                        body = f'Vehicle ID: {vid} hasn\'t reported in for ' \
+                               f'{f"{hours} hours and " if hours > 0 else ""}{minutes % 60} minutes'
                         print(subject)
+                        print(body)
                         # notifications(recipients=email,
                         #               subject=subject,
                         #               body=body)
