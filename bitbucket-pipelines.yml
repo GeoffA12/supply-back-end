@@ -3,23 +3,29 @@
 # Only use spaces to indent your .yml configuration.
 # -----
 # You can specify a custom docker image from Docker Hub as your build environment.
-image: python:3.6-alpine
+image: ubuntu
 
 pipelines:
   default:
     - step:
         caches:
-          - pip
+          #- pip
         script: # Modify the commands below to build your repository.
-          - apk update
-          - apk add -U --no-cache gcc build-base linux-headers ca-certificates python3-dev libffi-dev libressl-dev libxslt-dev
-          - pip install -r requirements.txt
+          - apt-get update && apt-get upgrade
+          - apt-get install python3.6
+          - apt-get install build-essential --yes
+          #- apt-get install 
+          #- apk update
+          #- apk add -U --no-cache gcc build-base linux-headers ca-certificates python3-dev libffi-dev libressl-dev libxslt-dev
+          - apt install python3-pip --yes
+          - pip3 install -r requirements.txt
           # We need the ampersand after login.py to ensure that the python file doesn't 
           # stay forked to the foreground and lock our cursor.
+          - ls
+          - cd ../
+          - apt-get install git --yes
+          - git clone git@bitbucket.org:swei_team22/common-services.git
+          - ls
+          - cd build
           - cd unittest
-          - python3 test_dispatch.py &
-          - python3 test_dispatchstatus.py &
-          - python3 test_fleet.py &
-          - python3 test_fleetmanager.py &
-          - python3 test_servicetype.py &
-          - python3 test_vehiclestatus.py
+          - python -m unittest discover
