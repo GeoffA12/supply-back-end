@@ -3,7 +3,7 @@
 # Only use spaces to indent your .yml configuration.
 # -----
 # You can specify a custom docker image from Docker Hub as your build environment.
-image: python:3.7.3
+image: python:3.6-alpine
 
 pipelines:
   default:
@@ -11,4 +11,15 @@ pipelines:
         caches:
           - pip
         script: # Modify the commands below to build your repository.
+          - apk update
+          - apk add -U --no-cache gcc build-base linux-headers ca-certificates python3-dev libffi-dev libressl-dev libxslt-dev
           - pip install -r requirements.txt
+          # We need the ampersand after login.py to ensure that the python file doesn't 
+          # stay forked to the foreground and lock our cursor.
+          - cd unittest
+          - python3 test_dispatch.py &
+          - python3 test_dispatchstatus.py &
+          - python3 test_fleet.py &
+          - python3 test_fleetmanager.py &
+          - python3 test_servicetype.py &
+          - python3 test_vehiclestatus.py
