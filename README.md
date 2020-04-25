@@ -1,6 +1,6 @@
 # WeGo Services Supply Backend #
-[![Generic badge](https://img.shields.io/badge/version-1.1.0-<COLOR>.svg)](https://shields.io/)
-[![Generic badge](https://img.shields.io/badge/build-unstable-red.svg)](https://shields.io/) 
+[![Generic badge](https://img.shields.io/badge/version-1.2.0-<COLOR>.svg)](https://shields.io/)
+[![Generic badge](https://img.shields.io/badge/build-stable-<COLOR>>.svg)](https://shields.io/) 
 [![Generic badge](https://img.shields.io/badge/code_style-SWETeam22-teal.svg)](https://github.com/komoto415/COSC3339/blob/master/Trying%20Markdown/StyleAndDirectoryGuide.md)
 
 ## What to Expect ##
@@ -20,7 +20,8 @@ a single web service where they can push and receive updates to their fleets and
 |Receives order from demandBE   |Functional
 |HTTPS response                 |Functional
 |Returns vehicle data           |Functional
-|Creating dispatch              |Functional?
-|Interaction with vehicle table |Queued
-|Update dispatch record         |Queued
-|
+|Creating dispatch              |Functional
+|Interaction with vehicle table |Functional
+|Update dispatch record         |Functional
+|Listening for heartbeats       |Functional
+|Email notifications            |Functional
