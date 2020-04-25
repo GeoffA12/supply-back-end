@@ -5,27 +5,21 @@
 # You can specify a custom docker image from Docker Hub as your build environment.
 image: ubuntu
 
+options:
+  max-time: 8
 pipelines:
   default:
     - step:
         caches:
-          #- pip
         script: # Modify the commands below to build your repository.
           - apt-get update && apt-get upgrade
           - apt-get install python3.6
           - apt-get install build-essential --yes
-          #- apt-get install 
-          #- apk update
-          #- apk add -U --no-cache gcc build-base linux-headers ca-certificates python3-dev libffi-dev libressl-dev libxslt-dev
           - apt install python3-pip --yes
           - pip3 install -r requirements.txt
-          # We need the ampersand after login.py to ensure that the python file doesn't 
-          # stay forked to the foreground and lock our cursor.
-          - ls
           - cd ../
           - apt-get install git --yes
           - git clone git@bitbucket.org:swei_team22/common-services.git
-          - ls
           - cd build
           - cd unittest
           - python3 -m unittest discover
