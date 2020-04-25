@@ -21,7 +21,7 @@ class TestDispatch(unittest.TestCase):
 
     def getDCOrder(self):
         return {
-            'serviceType': ServiceType.DRY_CLEANING.name,
+            'serviceType': ServiceType.DRYCLEANING.name,
             'custid': 1234567,
             'orderid': 1234,
             'destination': {
@@ -81,7 +81,7 @@ class TestDispatch(unittest.TestCase):
 
         dispatch = Dispatch(**dispatchDict)
 
-        self.assertEqual(ServiceType.DRY_CLEANING, dispatch.serviceType)
+        self.assertEqual(ServiceType.DRYCLEANING, dispatch.serviceType)
         self.assertEqual(12345, dispatch.vid)
         self.assertEqual(1234567, dispatch.custid)
         self.assertEqual(1234, dispatch.orderid)
