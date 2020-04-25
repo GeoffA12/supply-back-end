@@ -109,10 +109,13 @@ def addFleet(fleetData):
 
     statement = 'INSERT INTO fleets VALUES (Null, %s, %s, %s)'
     cursor.execute(statement, fleetData)
+    newFID = cursor.lastrowid
     sqlConnection.commit()
 
     cursor.close()
     sqlConnection.close()
+
+    return newFID
 
 
 def getVehicleByVID(vid):
