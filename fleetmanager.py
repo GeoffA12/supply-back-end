@@ -12,19 +12,19 @@ from account import Account
 
 class FleetManager(Account):
     ver = '0.1.0'
-    
+
     def __init__(self, username, email, password, firstname, lastname, phonenumber):
         super().__init__(username, email, password, firstname, lastname, phonenumber)
         self._fleetIDs = self.__fetchAssociatedFleetIDs()
-    
+
     def __fetchAssociatedFleetIDs(self):
         print()
         return 'Yes'
-    
+
     @property
     def fleetIDs(self):
         return self._fleetIDs
-    
+
     def __str__(self):
         return f'''Username: {self._username}
 Email: {self._email}

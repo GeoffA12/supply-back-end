@@ -6,7 +6,7 @@ from enums.vehiclestatus import VehicleStatus
 
 
 class MyTestCase(unittest.TestCase):
-    
+
     def test_stringToEnum(self):
         enum = VehicleStatus.translate('active')
         self.assertEqual(VehicleStatus.ACTIVE, enum)
@@ -29,7 +29,7 @@ class MyTestCase(unittest.TestCase):
         enum = VehicleStatus.INACTIVE
         self.assertEqual('INACTIVE', enum.name)
         self.assertEqual(2, enum.value)
-    
+
     def test_maintenance(self):
         enum = VehicleStatus.MAINTENANCE
         self.assertEqual('MAINTENANCE', enum.name)

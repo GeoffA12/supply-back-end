@@ -11,21 +11,20 @@
 |HEAD       |/vehicles    |EXISTS             |No
 
 ## Read Supported Vehicle Resources
-TO BE REFACTORED  
-URI: `/vehicleRequest`
+URI: `/supply/vehicles`
 
 | Parameter | Semantics     |
 |:---       |:---           |
 |vid        |Vehicle ID     |   
 |oid        |Order ID       |
-|fmid       |Fleet master   |
+|user       |Fleet master   |
 |fid        |Fleet ID       |
 
 ### By Vehicle ID ![Generic badge](https://img.shields.io/badge/status-Stable-green.svg)
 **API Call:**  
 https://supply.team22.softwareengineeringii.com/supply/vehicles?vid={vehicle id}  
 **Example API Call:**  
-https://supply.team22.softwareengineeringii.com/supply/vehicles?vid=30
+https://supply.team22.softwareengineeringii.com/supply/vehicles?vid=28
 
 ### By Order ID ![Generic badge](https://img.shields.io/badge/status-Unstable-red.svg)
 **API Call:**  
@@ -35,11 +34,11 @@ https://supply.team22.softwareengineeringii.com/supply/vehicles?oid=12
 
 ### By Fleet Master ![Generic badge](https://img.shields.io/badge/status-Stable-green.svg)
 **API Call:**  
-https://supply.team22.softwareengineeringii.com/supply/vehicles?fmid={fleet master email}  
+https://supply.team22.softwareengineeringii.com/supply/vehicles?user={fleet master email}  
 **Example API Call:**  
-https://supply.team22.softwareengineeringii.com/supply/vehicles?fmid=komoto415%40gmail.com
+https://supply.team22.softwareengineeringii.com/supply/vehicles?user=komoto415%40gmail.com
 
-### By Fleet ID ![Generic badge](https://img.shields.io/badge/status-Broken-red.svg)
+### By Fleet ID ![Generic badge](https://img.shields.io/badge/status-Stable-green.svg)
 **API Call:**  
 https://supply.team22.softwareengineeringii.com/supply/vehicles?fid={fleet id}  
 **Example API Call:**  
@@ -112,8 +111,7 @@ HTTP Status: 404
 ```
 
 ## Read Supported Dispatch Resources
-TO BE REFACTORED  
-URI: `/getDispatch`
+URI: `/supply/dispatch`
 
 | Parameter | Semantics     |
 |:---       |:---           |
@@ -137,7 +135,8 @@ https://supply.team22.softwareengineeringii.com/supply/dispatch?vid=12
 |/supply/vehicles/upd   |Update a vehicle
 
 ### Vehicle Request
-Keys Value Constraints of the post body ***case sensitive**:
+Keys Value Constraints of the post body are ***case sensitive**:  
+URI: `/supply/vehicles/req`
 
 |Key            |Value Type
 |:---           |:---
@@ -155,7 +154,7 @@ The value of said string will be derived from ServiceType enumerated type name a
  
 Example: 
 ```python
-st = 'DrYcLeaning'
+st = 'DrY_cLeaning'
 serviceTypeEnum = ServiceType.translate(st)
 print(serviceTypeEnum)    
 print(serviceTypeEnum.name)
@@ -167,7 +166,7 @@ DRYCLEANING
 ```
 
 ##### destination
-Keys Value Constraints of the destination key's value ***case sensitive**:
+Keys Value Constraints of the destination key's value are ***case sensitive**:
 
 |Key    |Value Type
 |:---   |:---
@@ -235,7 +234,8 @@ Customer submits an order request
 ```
 
 ### Registering a Vehicle
-Keys Value Constraints of the post body ***case sensitive**:
+Keys Value Constraints of the post body are **case sensitive**:  
+URI: `/supply/vehicles/add`
 
 |Key            |Value Type
 |:---           |:---
@@ -275,13 +275,16 @@ A Fleet manager adds some vehicles to his fleet
 }
 ```
 ### Removing a Vehicle
+Keys Value Constraints of the post body ***case sensitive**:
+URI: `supply/vehicles/rem`
 
 ### Updating a Vehicle
 Keys Value Constraints of the post body ***case sensitive**:
+URI: `supply/vehicles/upd`
 
 |Key                |Value Type
 |:---               |:---
-|vid*               |String
+|vid                |String
 |status*            |String
 |licenseplate       |String
 |fleetid            |String
@@ -289,12 +292,12 @@ Keys Value Constraints of the post body ***case sensitive**:
 |current_lon        |Float
 |last_heartbeat*    |String
 
-#### *Notes for Key Value Constraints
-##### vid
-Every update request MUST have the vid key
+Despite what attribute is going to be updated, every postBody must contain a valid vehicle ID (vid) of who is to be updated
 
+#### *Notes for Key Value Constraints
 ##### last_heartbeat
-The formatting of the heartbeat must be in ISO 8601 format
+The formatting of the heartbeat must be in ISO 8601 format  
+
 Given that the last_heartbeat key exists, postBody must also contain the keys current_lat and current_lon
 
 #### Example acceptable postBody
