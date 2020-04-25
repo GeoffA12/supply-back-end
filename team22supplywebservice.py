@@ -125,7 +125,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             fmid = databaseutils.getFMID(emailOrUser)
             fleetData = (region, serviceType, fmid,)
             print(fleetData)
-            databaseutils.addFleet(fleetData)
+            newFID = databaseutils.addFleet(fleetData)
+            responseBody = {'newFID': newFID}
 
         self.send_response(status)
         self.end_headers()
