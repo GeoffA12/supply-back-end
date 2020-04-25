@@ -4,7 +4,7 @@
 [![Generic badge](https://img.shields.io/badge/code_style-SWETeam22-teal.svg)](https://github.com/komoto415/COSC3339/blob/master/Trying%20Markdown/StyleAndDirectoryGuide.md)
 
 ## What to Expect ##
-This repository will compose of mostly unique backend components to our supply side clients. This such as our vehicl
+This repository will compose of mostly unique backend components to our supply side clients. This such as our vehicle
 and vehicle request APIs, fleet monitoring and fleet manager interactions
  
 ## Feature Set ##
