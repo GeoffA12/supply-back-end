@@ -63,7 +63,7 @@ def heartbeatListener(fleetid, fmid):
     email = cursor.fetchone()[0]
     cursor.close()
     sqlConnection.close()
-    CHECKER_INTERVAL = 10
+    CHECKER_INTERVAL = 60
     missedHeartbeats = {}
     try:
         while True:
