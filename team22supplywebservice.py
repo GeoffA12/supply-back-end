@@ -7,6 +7,7 @@ from urllib.parse import parse_qs
 import utils.databaseutils as databaseutils
 
 from utils.serverutils import notifications, healthChecker
+from utils.mappingutils import getHumanReadable
 from enums.vehiclestatus import VehicleStatus
 from enums.servicetype import ServiceType
 from dispatch import Dispatch
@@ -266,7 +267,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             for dispatch in dispatchesCopy:
                 print('dispatch', dispatch)
                 startLat, startLon = dispatch.pop(4), dispatch.pop(4)
-                startHuman = 'St. Edward\'s University'
+                startHuman = getHumanReadable(startLon, startLat)
+                # startHuman = 'St. Edward\'s University'
                 startDict = {
                     'humanReadable': startHuman,
                     'lat': float(startLat),
@@ -274,7 +276,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 }
 
                 endLat, endLon = dispatch.pop(4), dispatch.pop(4)
-                endHuman = '1234 That Street Ave'
+                endHuman = getHumanReadable(endLon, endLat)
+                # endHuman = '1234 That Street Ave'
                 endDict = {
                     'humanReadable': endHuman,
                     'lat': float(endLat),
