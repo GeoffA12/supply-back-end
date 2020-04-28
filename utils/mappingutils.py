@@ -49,6 +49,13 @@ def getETA(startLat=None, startLon=None, endLat=None, endLon=None):
     return round(eta, 2)
 
 
-# heartbeat not implemented in this utils yet
-def heartbeat():
-    return "healthcheck data"
+def getHumanReadable(begin_long, begin_lat):
+    # Make request for mapbox driving data given a set of coordinates
+    mapbox_driving_req = requests.get(
+            'https://api.mapbox.com/geocoding/v5/mapbox.places/' + str(begin_long) + ',' + str(
+                    begin_lat) + '.json?access_token=pk.eyJ1IjoiY3N5Y2hldiIsImEiOiJjazZsbmg4c2gwYXU3M21zOG55aTljcTBuIn0.G5UXjF-3_0mXKo6huFgLwg&place_name')
+    # encode data
+    data = mapbox_driving_req.json()
+    # json dump place name data
+    address = json.dumps(data.get("features")[0].get('place_name'))
+    return address
