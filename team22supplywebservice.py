@@ -127,6 +127,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             fleetData = (region, serviceType, fmid,)
             print(fleetData)
             newFID = databaseutils.addFleet(fleetData)
+            notifications(emailOrUser, 'New Fleet Added!', f'Fleet {newFID} was just added to your arsenal!')
             responseBody = {'newFID': newFID}
 
         self.send_response(status)
